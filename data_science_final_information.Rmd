@@ -1,0 +1,90 @@
+---
+title: "Data science final guideline"
+author: "Yi Huang"
+date: "2023-04-28"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Final Project
+
+
+## Deliverables and deadlines
+Due: May 10 by 11:59pm\
+Each team is required to submit one report.
+
+
+## Dataset
+
+Please merge the midterm project datasets from two team members, and keep only the unique observations. If there are three team members, you can decide which two datasets to merge. 
+
+
+## Background
+
+To gain a better understanding of the factors that predict recovery time from COVID-19 illness, a study was designed to combine three existing cohort studies that have been tracking participants for several years. The study collects recovery information through questionnaires and medical records, and leverages existing data on personal characteristics prior to the pandemic. The ultimate goal is to develop a prediction model for recovery time and identify important risk factors for long recovery time.
+
+
+## Data
+
+recovery.RData 
+
+The dataset in "recovery.RData" consists of 10000 participants. In your analysis, please draw a random sample of 2000 participants using the following R code:
+
+set.seed([last four digits of your UNI]) 
+
+dat <- dat[sample(1:10000, 2000),]
+
+The resulting dat object will contain a random sample of 2000 participants that you can use for your analysis.
+
+
+## Here is a description of each variable:
+
+Variable Description
+
+- ID (id) :Participant ID
+
+- Gender (gender): 1 = Male, 0 = Female
+
+- Race/ethnicity (race): 1 = White, 2 = Asian, 3 = Black, 4 = Hispanic
+
+- Smoking (smoking): Smoking status; 0 = Never smoked, 1 = Former smoker, 2 = Current smoker
+
+- Height (height): Height (in centimeters)
+
+- Weight (weight): Weight (in kilograms)
+
+- BMI (bmi): Body Mass Index; BMI = weight (in kilograms) / height (in meters) squared
+
+- Hypertension (hypertension): 0 = No, 1 = Yes
+
+- Diabetes (diabetes): 0 = No, 1 = Yes
+
+- Systolic blood pressure (SBP): Systolic blood pressure (in mm/Hg)
+
+- LDL cholesterol (LDL): LDL (low-density lipoprotein) cholesterol (in mg/dL)
+
+- Vaccination status at the time of infection (vaccine): 0 = Not vaccinated, 1 = Vaccinated
+
+- Severity of COVID-19 infection (severity): 0 = Not severe, 1= Severe
+
+- Study (study): The study (A/B/C) that the participant belongs to
+
+- Time to recovery (tt_recovery_time): Time from COVID-19 infection to recovery in days
+ 
+
+## Report
+
+Your report should be no more than five pages, excluding figures and tables. The total number of figures and tables should not exceed 8. You can submit an Appendix if you would like to include more details for modeling tuning.
+
+For the primary analysis on time to recovery, you may revise your midterm report and incorporate new findings from the methods introduced in the second half of the semester.
+
+As a secondary analysis, please consider time to recovery as a binary outcome (>30 days vs. <= 30 days) and develop a prediction model for this binary outcome.
+
+ 
+## Note
+
+Similar to the midterm project report, your report should include the following sections: exploratory analysis and data visualization, model training, results, and conclusions. 
+
