@@ -88,3 +88,41 @@ As a secondary analysis, please consider time to recovery as a binary outcome (>
 
 Similar to the midterm project report, your report should include the following sections: exploratory analysis and data visualization, model training, results, and conclusions. 
 
+
+```{r}
+library(caret)
+library(corrplot)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(ISLR)
+library(glmnet)
+library(mgcv)
+library(nlme)
+library(earth)
+library(vip)
+```
+
+
+```{r}
+#load data
+load("data/recovery.RData")
+
+#get data from 2 team members uni
+set.seed(3554)
+dat1 <- dat[sample(1:10000, 2000),]
+set.seed(4437)
+dat2 <- dat[sample(1:10000, 2000),]
+
+#combine the data and discard duplicates
+dat_temp <- rbind(dat1, dat2)
+dat <- dat_temp[!duplicated(dat_temp$id),]
+
+#dat is now the final data and it has the length as following:
+length(dat$id)
+
+```
+
+
+
+
