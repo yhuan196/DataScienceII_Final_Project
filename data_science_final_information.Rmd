@@ -121,6 +121,29 @@ dat <- dat_temp[!duplicated(dat_temp$id),]
 #dat is now the final data and it has the length as following:
 length(dat$id)
 
+
+```
+
+```{r}
+# data manipulation
+data = 
+  dat %>% 
+  mutate(study = factor(dat$study),
+         gender = factor(dat$gender),
+         hypertension = factor(dat$hypertension),
+         diabetes = factor(dat$diabetes),
+         vaccine = factor(dat$vaccine),
+         severity = factor(dat$severity)) %>% 
+  dplyr::select(-id)
+head(data)
+
+
+#Split data into 80-20, using the third member's uni
+set.seed(2337)
+indexTrain <- createDataPartition(y=data$recovery_time, p=0.8, list=FALSE)
+
+train_data <- data[indexTrain,]
+test_data <- data[-indexTrain,]
 ```
 
 
