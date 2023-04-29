@@ -1,6 +1,6 @@
 ---
 title: "Data science final guideline"
-author: "Yi Huang"
+author: "Yi Huang, Yuchen Zhang, Shun Xie"
 date: "2023-04-28"
 output: pdf_document
 ---
@@ -89,7 +89,7 @@ As a secondary analysis, please consider time to recovery as a binary outcome (>
 Similar to the midterm project report, your report should include the following sections: exploratory analysis and data visualization, model training, results, and conclusions. 
 
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(caret)
 library(corrplot)
 library(tidyverse)
