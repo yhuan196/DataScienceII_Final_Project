@@ -2,7 +2,19 @@
 title: "Data science final guideline"
 author: "Yi Huang, Yuchen Zhang, Shun Xie"
 date: "2023-04-28"
-output: pdf_document
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc: yes
+    toc_depth: 2
+  fontsize: 10pt
+  geometry: margin=0.5in
+  header-includes:
+    -\usepackage{fancyhdr}
+    -\usepackage{lipsum}
+    -\pagestyle{fancy}
+    -\fancyhead[R]{\thepage}
+    -\fancypagestyle{plain}{\pagestyle{fancy}}
 ---
 
 ```{r setup, include=FALSE}
@@ -103,7 +115,7 @@ library(earth)
 library(vip)
 ```
 
-
+## Introduction
 ```{r}
 #load data
 load("data/recovery.RData")
@@ -123,7 +135,10 @@ length(dat$id)
 
 
 ```
+## Exploratory Data Analysis
 
+
+## Model training
 ```{r}
 # data manipulation
 data = 
@@ -147,5 +162,63 @@ test_data <- data[-indexTrain,]
 ```
 
 
+### primary analysis
 
+#### Modeling Strategy
+
+
+* **Penalized logistic regression** 
+* **Generalized additive model (GAM)** 
+* **Multivariate adaptive regression splines (MARS)** 
+* **Linear discriminant analysis (LDA)**
+* **Random Forest**
+* **Boosting**
+
+
+
+#### Optimal Tuning Parameters
+
+#### Resampling Results and Model Selection
+
+### secondary analysis
+
+#### Modeling Strategy
+
+
+* **Penalized logistic regression** 
+* **Generalized additive model (GAM)** 
+* **Multivariate adaptive regression splines (MARS)** 
+* **Linear discriminant analysis (LDA)**
+* **Classification and Regression Tree (CART)**
+* **Random Forest**
+* **Boosting**
+* **Support Vector Machine (SVM with Linear and Radial Kernels)**
+
+
+#### Optimal Tuning Parameters
+
+#### Resampling Results and Model Selection
+
+## Results
+
+### primary analysis
+
+
+#### Interpretion   
+
+#### Variable Importance
+
+#### model's training/test performance
+
+### secondary analysis
+
+#### Interpretion   
+
+#### Variable Importance
+
+#### model's training/test performance
+
+## Conclusion
+
+## Appendix
 
