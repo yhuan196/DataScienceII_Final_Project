@@ -137,6 +137,54 @@ length(dat$id)
 ```
 ## Exploratory Data Analysis
 
+```{r}
+
+#continuous
+ggplot(data, aes(x = age))+geom_density()+labs(title="Distribution for age")
+ggplot(data, aes(x = height))+geom_density()+labs(title="Distribution for height")
+ggplot(data, aes(x = weight))+geom_density()+labs(title="Distribution for weight")
+ggplot(data, aes(x = bmi))+geom_density()+labs(title="Distribution for bmi")
+ggplot(data, aes(x = SBP))+geom_density()+labs(title="Distribution for SBP")
+ggplot(data, aes(x = LDL))+geom_density()+labs(title="Distribution for LDL")
+ggplot(data, aes(x = recovery_time))+geom_density()+labs(title="Distribution for recovery_time")
+
+
+#discrete
+ggplot(data) + geom_bar(aes(x=gender))+labs(title="Bar plot for different gender")
+ggplot(data) + geom_bar(aes(x=race))+labs(title="Bar plot for different race")
+ggplot(data) + geom_bar(aes(x=smoking))+labs(title="Bar plot for different smoking")
+ggplot(data) + geom_bar(aes(x=hypertension))+labs(title="Bar plot for different hypertension")
+ggplot(data) + geom_bar(aes(x=diabetes))+labs(title="Bar plot for different diabetes")
+ggplot(data) + geom_bar(aes(x=vaccine))+labs(title="Bar plot for different vaccine")
+ggplot(data) + geom_bar(aes(x=severity))+labs(title="Bar plot for different severity")
+ggplot(data) + geom_bar(aes(x=study))+labs(title="Bar plot for different study")
+
+
+num_df <- 
+  data %>% 
+  dplyr::select(age, height, weight, bmi, SBP, LDL, recovery_time) 
+
+
+# calulate the correlations
+res <- cor(num_df, use="complete.obs")
+
+corrplot(res, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+
+```
+
+```{r}
+
+ggplot(data, aes(x = age, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against age")
+ggplot(data, aes(x = height, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against height")
+ggplot(data, aes(x = weight, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against weight")
+ggplot(data, aes(x = bmi, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against bmi")
+ggplot(data, aes(x = SBP, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against SBP")
+ggplot(data, aes(x = LDL, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against LDL")
+
+```
+
+
 
 ## Model training
 ```{r}
@@ -162,7 +210,7 @@ test_data <- data[-indexTrain,]
 ```
 
 
-### primary analysis
+### primary analysis (Regression)
 
 #### Modeling Strategy
 
@@ -180,7 +228,22 @@ test_data <- data[-indexTrain,]
 
 #### Resampling Results and Model Selection
 
-### secondary analysis
+### secondary analysis (Classification)
+
+#### Data Manipulation
+
+```{r}
+#consider time to recovery as a binary outcome (>30 days vs. <= 30 days) and develop a prediction model for this binary outcome.
+data_class = 
+  data %>% 
+  mutate(recovery_time = ifelse(recovery_time>30, 1, 0))
+
+#display the result 
+head(data_class)
+```
+
+
+
 
 #### Modeling Strategy
 
