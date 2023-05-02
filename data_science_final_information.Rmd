@@ -18,7 +18,11 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.align = "center",
+                      fig.width = 8, 
+                      fig.height = 6,
+                      out.width = "90%")
 ```
 
 # Final Project
@@ -133,7 +137,7 @@ dat <- dat_temp[!duplicated(dat_temp$id),]
 #dat is now the final data and it has the length as following:
 length(dat$id)
 
-
+# save(dat, file = "data/covid_recovery.RData")
 ```
 ## Exploratory Data Analysis
 
@@ -201,14 +205,21 @@ data =
 head(data)
 
 
-#Split data into 80-20, using the third member's uni
+#Split data into 70-30, using the third member's uni
 set.seed(2337)
-indexTrain <- createDataPartition(y=data$recovery_time, p=0.8, list=FALSE)
+indexTrain <- createDataPartition(y=data$recovery_time, p=0.7, list=FALSE)
 
 train_data <- data[indexTrain,]
 test_data <- data[-indexTrain,]
 ```
 
+# Resampling method
+```{r}
+# repeated 10-fold cv
+ctrl <- trainControl(method = "repeatedcv",
+                     number = 10,
+                     repeats = 10)
+```
 
 ### primary analysis (Regression)
 
