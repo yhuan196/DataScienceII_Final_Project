@@ -207,10 +207,17 @@ head(data)
 
 #Split data into 70-30, using the third member's uni
 set.seed(2337)
-indexTrain <- createDataPartition(y=data$recovery_time, p=0.7, list=FALSE)
+indexTrain <- createDataPartition(y = data$recovery_time, p = 0.7, list = FALSE)
 
+# training data
 train_data <- data[indexTrain,]
+train_x <- data[indexTrain,]
+train_y <- data$recovery_time[indexTrain]
+
+# test data
 test_data <- data[-indexTrain,]
+test_x <- data[-indexTrain,]
+test_y <- data$recovery_time[-indexTrain]
 ```
 
 # Resampling method
@@ -222,6 +229,47 @@ ctrl <- trainControl(method = "repeatedcv",
 ```
 
 ### primary analysis (Regression)
+
+* **Linear regression**
+* **Partial least squares (PLS)**
+* **Generalized Additive Model (GAM)**
+* **Multivariate Adaptive Regression Splines (MARS)**
+* **Elastic net**
+* **Boosting**
+* **Random forest**
+
+#### Linear regression
+```{r}
+## fit linear model on train data
+linear_model <- train(train_x,
+                      train_y,
+                      method = "lm", 
+                      trControl = ctrl)
+summary(linear_model)
+
+# view performance on the test set (RMSE)
+lm_test_pred <- predict(linear_model, newdata = test_x) # test dataset
+lm_test_rmse <- sqrt(mean((lm_test_pred - test_y)^2))
+lm_test_rmse
+```
+
+#### PLS
+```{r}
+pls_model <- train(train_x,
+                   train_y,
+                   method = "pls",
+                   tuneGrid = data.frame(ncomp = 1:16),
+                   trControl = ctrl,
+                   preProcess = c("center", "scale"))
+ggplot(pls_model, highlight = TRUE)
+ggsave(file = "image/pls_number_of_component.png", width = 10, height = 7)
+
+# view performance on the test set (RMSE)
+pls_test_pred <- predict(pls_model, newdata = test_x) # test dataset
+pls_test_rmse <- sqrt(mean((pls_test_pred - test_y)^2))
+pls_test_rmse
+```
+
 
 #### Modeling Strategy
 
