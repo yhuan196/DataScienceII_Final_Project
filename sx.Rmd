@@ -119,7 +119,7 @@ library(earth)
 library(vip)
 ```
 
-## Introduction & data manipulation
+## Introduction
 ```{r}
 #load data
 load("data/recovery.RData")
@@ -155,23 +155,19 @@ data =
 head(data)
 
  
-#Split data into 70-300, using the third member's uni
-set.seed(2337)
-indexTrain <- createDataPartition(y = data$recovery_time, p = 0.7, list = FALSE)
+#Split data into 80-20, using the third member's uni
+set.seed(8)
+indexTrain <- createDataPartition(y = data$recovery_time, p = 0.8, list = FALSE)
 
 # training data
 train_data <- data[indexTrain,]
-# matrix of predictors
-train_x <- model.matrix(recovery_time~.,train_data)[,-1]
-# vector of response
-train_y <- train_data$recovery_time
+train_x <- data[indexTrain,]
+train_y <- data$recovery_time[indexTrain]
 
 # test data
 test_data <- data[-indexTrain,]
-# matrix of predictors
-test_x <- model.matrix(recovery_time~.,test_data)[,-1]
-# vector of response
-test_y <- test_data$recovery_time
+test_x <- data[-indexTrain,]
+test_y <- data$recovery_time[-indexTrain]
 ```
 
 
@@ -213,62 +209,31 @@ corrplot(res, type = "upper", order = "hclust",
 
 ```
 
+
+#ENet
 ```{r}
+# matrix of predictors
+x <- model.matrix(recovery_time~.,data)[,-1]
 
-ggplot(train_data, aes(x = age, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against age")
-ggplot(train_data, aes(x = height, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against height")
-ggplot(train_data, aes(x = weight, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against weight")
-ggplot(train_data, aes(x = bmi, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against bmi")
-ggplot(train_data, aes(x = SBP, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against SBP")
-ggplot(train_data, aes(x = LDL, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against LDL")
-
-```
+# vector of response
+y <- data$recovery_time
 
 
-
-## Model training
-
-
-# Resampling method
-```{r}
 # repeated 10-fold cv
-ctrl <- trainControl(method = "cv",
-                     number = 10)
-```
+ctrl <- trainControl(method = "repeatedcv",
+                     number = 10,
+                     repeats = 10)
 
-### primary analysis (Regression)
-
-* **Linear regression**
-* **Partial least squares (PLS)**
-* **Generalized Additive Model (GAM)**
-* **Multivariate Adaptive Regression Splines (MARS)**
-* **Elastic net**
-* **Boosting**
-* **Random forest**
-
-#### Linear regression
-```{r}
-## fit linear model on train data
-set.seed(8)
-linear_model <- train(train_x,
-                      train_y,
-                      method = "lm", 
-                      trControl = ctrl)
-summary(linear_model)
-
-# view performance on the test set (RMSE)
-lm_test_pred <- predict(linear_model, newdata = test_x) # test dataset
-lm_test_rmse <- sqrt(mean((lm_test_pred - test_y)^2))
-sprintf("test error for lm is: %.3f",lm_test_rmse)
 ```
 
 
-### Enet
 
 ```{r}
+
+
 #tuning glmnet alpha 0 and 0.05 have large RMSE. So alpha start from 0.1
 set.seed(8)
-enet.fit.min <- train(train_x, train_y,
+enet.fit.min <- train(x, y,
                   method = "glmnet",
                   tuneGrid = expand.grid(alpha = seq(0.1, 1, length = 21), 
                                          lambda = exp(seq(-10, -4, length = 100))),
@@ -277,57 +242,10 @@ enet.fit.min$bestTune
 plot(enet.fit.min)
 
 
-# view performance on the test set (RMSE)
-enet_test_pred <- predict(enet.fit.min, newdata = test_x) # test dataset
-enet_test_rmse <- sqrt(mean((enet_test_pred - test_y)^2))
-sprintf("test error for enet is: %.3f",enet_test_rmse)
-
-```
-
-#### PLS
-```{r}
-set.seed(8)
-pls_model <- train(train_x,
-                   train_y,
-                   method = "pls",
-                   tuneGrid = data.frame(ncomp = 1:16),
-                   trControl = ctrl,
-                   preProcess = c("center", "scale"))
-ggplot(pls_model, highlight = TRUE)
-ggsave(file = "image/pls_number_of_component.png", width = 10, height = 7)
-
-# view performance on the test set (RMSE)
-pls_test_pred <- predict(pls_model, newdata = test_x) # test dataset
-pls_test_rmse <- sqrt(mean((pls_test_pred - test_y)^2))
-sprintf("test error for pls is: %.3f",pls_test_rmse)
-
 ```
 
 
-
-
-
-
-#### Modeling Strategy
-
-
-* **Penalized logistic regression** 
-* **Generalized additive model (GAM)** 
-* **Multivariate adaptive regression splines (MARS)** 
-* **Linear discriminant analysis (LDA)**
-* **Random Forest**
-* **Boosting**
-
-
-
-#### Optimal Tuning Parameters
-
-#### Resampling Results and Model Selection
-
-### secondary analysis (Classification)
-
-#### Data Manipulation
-
+#class
 
 ```{r}
 #consider time to recovery as a binary outcome (>30 days vs. <= 30 days) and develop a prediction model for this binary outcome.
@@ -348,29 +266,24 @@ y_train_class <- train_class$recovery_time
 # matrix of predictors
 x_test_class <- model.matrix(recovery_time~.,test_class)[,-1]
 # vector of response
-y_test_class <- test_class$recovery_time
+y_test_class <- train_class$recovery_time
 
 
 # ctrl for class
-ctrl_class <- trainControl(method = "cv",
+ctrl_class <- trainControl(method = "repeatedcv",
                      summaryFunction = twoClassSummary,
                      classProbs = TRUE)
 ```
 
+### Logistic enet
 
 
-
-
-#### Modeling Strategy
-
-
-* **Penalized logistic regression** 
 ```{r}
 glmnGrid <- expand.grid(.alpha = seq(0, 1, length = 21),
-                        .lambda = exp(seq(-10, -5, length = 50)))
-set.seed(8)
+                        .lambda = seq(0, 0.0001, length = 50))
+set.seed(1)
 model.glmn <- train(x = x_train_class,
-                    y = y_train_class,
+                    y = y_test_class,
                     method = "glmnet",
                     tuneGrid = glmnGrid,
                     metric = "ROC",
@@ -383,51 +296,7 @@ myPar <- list(superpose.symbol = list(col = myCol),
               superpose.line = list(col = myCol))
 
 plot(model.glmn, par.settings = myPar, xTrans = function(x) log(x))
-
-
-# view performance on the test set (accuracy)
-glmn_class_test_pred <- predict(model.glmn, newdata=x_test_class) # test dataset
-glmn_class_test_acc <- sum(glmn_class_test_pred==y_test_class)/length(y_test_class)
-sprintf("test error for penalized logistic is: %.3f",1-glmn_class_test_acc)
-
-
 ```
 
-Since the boundary value for $\lambda$ is exp(-10)=4.54e-5 and exp(-5)=0.007, and the optimal lambda is not on the boundary. So local minimum is achieved.
 
-* **Generalized additive model (GAM)** 
-* **Multivariate adaptive regression splines (MARS)** 
-* **Linear discriminant analysis (LDA)**
-* **Classification and Regression Tree (CART)**
-* **Random Forest**
-* **Boosting**
-* **Support Vector Machine (SVM with Linear and Radial Kernels)**
-
-
-#### Optimal Tuning Parameters
-
-#### Resampling Results and Model Selection
-
-## Results
-
-### primary analysis
-
-
-#### Interpretion   
-
-#### Variable Importance
-
-#### model's training/test performance
-
-### secondary analysis
-
-#### Interpretion   
-
-#### Variable Importance
-
-#### model's training/test performance
-
-## Conclusion
-
-## Appendix
 
