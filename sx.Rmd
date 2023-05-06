@@ -299,4 +299,27 @@ plot(model.glmn, par.settings = myPar, xTrans = function(x) log(x))
 ```
 
 
+```{r}
+# kernlab
+set.seed(8)
+svml.fit <- train(recovery_time ~ . , 
+                  data = train_class, 
+                  method = "svmLinear",
+                  tuneGrid = data.frame(C = exp(seq(-4,5,len=10))),
+                  trControl = ctrl)
+
+plot(svml.fit, highlight = TRUE, xTrans = log)
+```
+
+
+```{r}
+set.seed(8)
+svml.fit <- train(recovery_time ~ . , 
+                  data = train_class, 
+                  method = "svmLinear",
+                  tuneGrid = data.frame(C = exp(seq(7,10,len=1))),
+                  trControl = ctrl)
+
+plot(svml.fit, highlight = TRUE, xTrans = log)
+```
 

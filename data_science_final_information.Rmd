@@ -367,7 +367,7 @@ ctrl_class <- trainControl(method = "cv",
 * **Penalized logistic regression** 
 ```{r}
 glmnGrid <- expand.grid(.alpha = seq(0, 1, length = 21),
-                        .lambda = exp(seq(-10, -5, length = 50)))
+                        .lambda = exp(seq(-12, -7, length = 50)))
 set.seed(8)
 model.glmn <- train(x = x_train_class,
                     y = y_train_class,
@@ -396,6 +396,7 @@ sprintf("test error for penalized logistic is: %.3f",1-glmn_class_test_acc)
 Since the boundary value for $\lambda$ is exp(-10)=4.54e-5 and exp(-5)=0.007, and the optimal lambda is not on the boundary. So local minimum is achieved.
 
 * **Generalized additive model (GAM)** 
+
 * **Multivariate adaptive regression splines (MARS)** 
 * **Linear discriminant analysis (LDA)**
 * **Classification and Regression Tree (CART)**
