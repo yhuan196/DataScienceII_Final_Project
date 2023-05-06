@@ -220,9 +220,8 @@ y <- data$recovery_time
 
 
 # repeated 10-fold cv
-ctrl <- trainControl(method = "repeatedcv",
-                     number = 10,
-                     repeats = 10)
+ctrl <- trainControl(method = "cv",
+                     number = 10)
 
 ```
 
@@ -317,7 +316,7 @@ set.seed(8)
 svml.fit <- train(recovery_time ~ . , 
                   data = train_class, 
                   method = "svmLinear",
-                  tuneGrid = data.frame(C = exp(seq(7,10,len=1))),
+                  tuneGrid = data.frame(C = exp(seq(7,10,len=10))),
                   trControl = ctrl)
 
 plot(svml.fit, highlight = TRUE, xTrans = log)
