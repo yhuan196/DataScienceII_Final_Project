@@ -395,8 +395,9 @@ sprintf("test error for penalized logistic is: %.3f",1-glmn_class_test_acc)
 
 Since the boundary value for $\lambda$ is exp(-10)=4.54e-5 and exp(-5)=0.007, and the optimal lambda is not on the boundary. So local minimum is achieved.
 
-* **Generalized additive model (GAM)** 
 
+* **Penalized logistic regression** 
+* **Generalized additive model (GAM)** 
 * **Multivariate adaptive regression splines (MARS)** 
 * **Linear discriminant analysis (LDA)**
 * **Classification and Regression Tree (CART)**
@@ -404,6 +405,69 @@ Since the boundary value for $\lambda$ is exp(-10)=4.54e-5 and exp(-5)=0.007, an
 * **Boosting**
 * **Support Vector Machine (SVM with Linear and Radial Kernels)**
 
+
+
+#### Penalized logistic regression
+```{r}
+glmnGrid <- expand.grid(.alpha = seq(0, 1, length = 21),
+                        .lambda = exp(seq(-12, -7, length = 50)))
+set.seed(8)
+model.glmn <- train(x = x_train_class,
+                    y = y_train_class,
+                    method = "glmnet",
+                    tuneGrid = glmnGrid,
+                    metric = "ROC",
+                    trControl = ctrl_class)
+
+model.glmn$bestTune
+
+myCol<- rainbow(25)
+myPar <- list(superpose.symbol = list(col = myCol),
+              superpose.line = list(col = myCol))
+
+plot(model.glmn, par.settings = myPar, xTrans = function(x) log(x))
+
+
+# view performance on the test set (accuracy)
+glmn_class_test_pred <- predict(model.glmn, newdata=x_test_class) # test dataset
+glmn_class_test_acc <- sum(glmn_class_test_pred==y_test_class)/length(y_test_class)
+sprintf("test error for penalized logistic is: %.3f",1-glmn_class_test_acc)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+#### linear SVM
+
+```{r}
+# kernlab
+set.seed(8)
+svml.fit <- train(recovery_time ~ . , 
+                  data = train_class, 
+                  method = "svmLinear",
+                  tuneGrid = data.frame(C = exp(seq(-4,5,len=10))),
+                  trControl = ctrl)
+
+plot(svml.fit, highlight = TRUE, xTrans = log)
+
+#train error
+train.pred.svml <- predict(svml.fit, newdata = train_class)
+train.error.svml = 1-sum(train_class$recovery_time == train.pred.svml)/length(train_data$recovery_time)
+sprintf("The train error for Support vector classifier is %.3f", train.error.svml)
+
+#test error
+test.pred.svml <- predict(svml.fit, newdata = test_class)
+test.error.svml = 1-sum(test_class$recovery_time == test.pred.svml)/length(test_class$recovery_time)
+sprintf("The test error for Support vector classifier is %.3f", test.error.svml)
+```
 
 #### Optimal Tuning Parameters
 

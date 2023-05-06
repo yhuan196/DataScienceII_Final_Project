@@ -311,7 +311,7 @@ plot(svml.fit, highlight = TRUE, xTrans = log)
 ```
 
 
-```{r}
+
 set.seed(8)
 svml.fit <- train(recovery_time ~ . , 
                   data = train_class, 
@@ -320,5 +320,18 @@ svml.fit <- train(recovery_time ~ . ,
                   trControl = ctrl)
 
 plot(svml.fit, highlight = TRUE, xTrans = log)
+
+
+
+```{r}
+#train error
+train.pred.svml <- predict(svml.fit, newdata = train_class)
+train.error.svml = 1-sum(train_class$recovery_time == train.pred.svml)/length(train_data$recovery_time)
+sprintf("The train error for Support vector classifier is %.3f", train.error.svml)
+
+#test error
+test.pred.svml <- predict(svml.fit, newdata = test_class)
+test.error.svml = 1-sum(test_class$recovery_time == test.pred.svml)/length(test_class$recovery_time)
+sprintf("The test error for Support vector classifier is %.3f", test.error.svml)
 ```
 
