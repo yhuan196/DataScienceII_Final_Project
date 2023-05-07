@@ -1,0 +1,272 @@
+---
+title: "Data science final"
+author: "Yi Huang, Yuchen Zhang, Shun Xie"
+date: "2023-05-07"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc: yes
+    toc_depth: 2
+  fontsize: 10pt
+  geometry: margin=0.5in
+  header-includes:
+    -\usepackage{fancyhdr}
+    -\usepackage{lipsum}
+    -\pagestyle{fancy}
+    -\fancyhead[R]{\thepage}
+    -\fancypagestyle{plain}{\pagestyle{fancy}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.align = "center",
+                      fig.width = 8, 
+                      fig.height = 6,
+                      out.width = "90%")
+```
+
+
+\newpage
+```{r, message=FALSE, warning=FALSE}
+library(caret)
+library(corrplot)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(ISLR)
+library(glmnet)
+library(mgcv)
+library(nlme)
+library(earth)
+library(vip)
+library(doParallel) # parallel computing
+```
+
+
+# Final Project
+
+
+## Deliverables and deadlines
+Due: May 10 by 11:59pm\
+Each team is required to submit one report.
+
+
+## Dataset
+
+Please merge the midterm project datasets from two team members, and keep only the unique observations. If there are three team members, you can decide which two datasets to merge. 
+
+
+## Background
+
+To gain a better understanding of the factors that predict recovery time from COVID-19 illness, a study was designed to combine three existing cohort studies that have been tracking participants for several years. The study collects recovery information through questionnaires and medical records, and leverages existing data on personal characteristics prior to the pandemic. The ultimate goal is to develop a prediction model for recovery time and identify important risk factors for long recovery time.
+
+
+## Data
+
+recovery.RData 
+
+The dataset in "recovery.RData" consists of 10000 participants. In your analysis, please draw a random sample of 2000 participants using the following R code:
+
+set.seed([last four digits of your UNI]) 
+
+dat <- dat[sample(1:10000, 2000),]
+
+The resulting dat object will contain a random sample of 2000 participants that you can use for your analysis.
+
+
+## Here is a description of each variable:
+
+Variable Description
+
+- ID (id) :Participant ID
+
+- Gender (gender): 1 = Male, 0 = Female
+
+- Race/ethnicity (race): 1 = White, 2 = Asian, 3 = Black, 4 = Hispanic
+
+- Smoking (smoking): Smoking status; 0 = Never smoked, 1 = Former smoker, 2 = Current smoker
+
+- Height (height): Height (in centimeters)
+
+- Weight (weight): Weight (in kilograms)
+
+- BMI (bmi): Body Mass Index; BMI = weight (in kilograms) / height (in meters) squared
+
+- Hypertension (hypertension): 0 = No, 1 = Yes
+
+- Diabetes (diabetes): 0 = No, 1 = Yes
+
+- Systolic blood pressure (SBP): Systolic blood pressure (in mm/Hg)
+
+- LDL cholesterol (LDL): LDL (low-density lipoprotein) cholesterol (in mg/dL)
+
+- Vaccination status at the time of infection (vaccine): 0 = Not vaccinated, 1 = Vaccinated
+
+- Severity of COVID-19 infection (severity): 0 = Not severe, 1= Severe
+
+- Study (study): The study (A/B/C) that the participant belongs to
+
+- Time to recovery (tt_recovery_time): Time from COVID-19 infection to recovery in days
+
+
+## load data, data partition
+```{r}
+# load data
+load("data/covid_recovery.Rdata")
+
+#Split data into 70-300, using the third member's uni
+set.seed(2337)
+indexTrain <- createDataPartition(y = data$recovery_time, p = 0.7, list = FALSE)
+
+# training data
+train_data <- data[indexTrain,]
+# matrix of predictors
+train_x <- model.matrix(recovery_time~.,train_data)[,-1]
+# vector of response
+train_y <- train_data$recovery_time
+
+# test data
+test_data <- data[-indexTrain,]
+# matrix of predictors
+test_x <- model.matrix(recovery_time~.,test_data)[,-1]
+# vector of response
+test_y <- test_data$recovery_time
+```
+
+
+# Model training
+
+## Resampling method
+```{r}
+# 10-fold cv
+ctrl <- trainControl(method = "cv",
+                     number = 10)
+```
+
+
+## primary analysis (Regression)
+
+* **Linear regression**
+* **Partial least squares (PLS)**
+* **Generalized Additive Model (GAM)**
+* **Multivariate Adaptive Regression Splines (MARS)**
+* **Elastic net**
+* **Boosting**
+* **Random forest**
+
+### Generalised additive regression
+
+```{r}
+# gam use caret
+# fit GAM model using all predictors
+gam_model <- train(train_x, train_y, # training dataset
+                   method = "gam",
+                   trControl = ctrl,
+                   control = gam.control(maxit = 200)) 
+
+gam_model$bestTune
+gam_model$finalModel
+plot(gam_model)
+summary(gam_model$finalModel)
+
+# view performance on the test set (RMSE)
+gam_test_pred <- predict(gam_model, newdata = test_x) # test dataset
+gam_test_rmse <- sqrt(mean((gam_test_pred - test_y)^2))
+gam_test_rmse
+```
+
+### Multivariate adaptive regression 
+
+```{r}
+set.seed(2337)
+
+# create dummy variables for categorical variables
+df_dummies <- data.frame(model.matrix(~ . - 1, 
+                                      # exclude ID and continuous variables
+                                      data = data[, c("gender", "race", "smoking", "hypertension", "diabetes",
+                                                     "vaccine", "severity", "study")]), 
+                         # add continuous variables back to the data frame
+                         age = data$age,
+                         height = data$height,
+                         weight = data$weight,
+                         bmi = data$bmi,
+                         SBP = data$SBP,
+                         LDL = data$LDL,
+                         recovery_time = data$recovery_time) 
+
+# rename df_dummies dataset as dat
+dat_mars <- df_dummies
+
+# training data
+dat_train_mars <- dat_mars[indexTrain, ]
+x_mars <- model.matrix(recovery_time~.,dat_mars)[indexTrain,-1]
+y_mars <- dat_mars$recovery_time[indexTrain]
+
+# test data
+dat_test_mars <- dat_mars[-indexTrain, ]
+x2_mars <- model.matrix(recovery_time~.,dat_mars)[-indexTrain,-1]
+y2_mars <- dat_mars$recovery_time[-indexTrain]
+
+
+# create grid of all possible pairs that can take degree and nprune values
+mars_grid <- expand.grid(degree = 1:3, # number of possible product hinge functions in 1 term
+                         nprune = 2:20) # upper bound of number of terms in model
+mars_model <- train(x_mars, y_mars, # training dataset
+                  method = "earth",
+                  tuneGrid = mars_grid,
+                  trControl = ctrl)
+
+ggplot(mars_model)
+print(plot(mars_model))
+summary(mars_model$finalModel)
+
+# view performance on the test set (RMSE)
+mars_test_pred <- predict(mars_model, newdata = x2_mars) # test dataset
+mars_test_rmse <- sqrt(mean((mars_test_pred - dat_test_mars$recovery_time)^2))
+sprintf("test error for mars is: %.3f", mars_test_rmse)
+```
+
+
+### Random Forest
+
+```{r}
+set.seed(2337)
+rf.grid <- expand.grid(mtry = 1:15,
+                       splitrule = "variance",
+                       min.node.size = seq(from = 1, to = 50, by = 5))
+
+# parallel computing
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+
+rf_model <- train(recovery_time ~ . , 
+                  train_data, 
+                  method = "ranger",
+                  tuneGrid = rf.grid,
+                  trControl = ctrl)
+
+stopCluster(cl)
+registerDoSEQ()
+ggplot(rf_model, highlight = TRUE)
+rf_model$bestTune
+
+# variable importance
+rf.final.per <- ranger(recovery_time ~ . , 
+                       train_data,
+                       mtry = rf_model$bestTune[[1]], 
+                       splitrule = "variance",
+                       min.node.size = rf_model$bestTune[[3]],
+                       importance = "permutation",
+                       scale.permutation.importance = TRUE) 
+
+barplot(sort(ranger::importance(rf.final.per), decreasing = FALSE), 
+        las = 2, horiz = TRUE, cex.names = 0.7,
+        col = colorRampPalette(colors = c("cyan","blue"))(19))
+
+# view performance on the test set (RMSE)
+rf_test_pred <- predict(rf_model, newdata = test_data) # test dataset
+rf_test_rmse <- sqrt(mean((rf_test_pred - test_y)^2))
+sprintf("test error for rf is: %.3f", rf_test_rmse)
+```
+
