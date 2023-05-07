@@ -404,7 +404,7 @@ sprintf("The test error for Support vector classifier is %.3f", test.error.svml)
 
 
 ```{r}
-svmr.grid <- expand.grid(C = exp(seq(-2,6,len=20)),
+svmr.grid <- expand.grid(C = exp(seq(-4,3,len=20)),
                          sigma = exp(seq(-10,-2,len=10)))
 
 # tunes over both cost and sigma
@@ -435,4 +435,4 @@ test.error.svmr = 1-sum(test_class$recovery_time == test.pred.svmr)/length(test_
 sprintf("The test error for Support vector Machine with radial kernel is %.3f", test.error.svmr)
 ```
 
-The value is not on the boundary, hence the local maximum accuracy is achieved. It takes a long time (aprox 30 min) to run so it may be hard to refine into a smaller grid.
+After tuning, the cost in this range achieves local maximum accuracy. The value is not on the boundary, hence the local maximum accuracy is achieved. It takes a long time (aprox 30 min) to run so it may be hard to refine into a smaller grid.
