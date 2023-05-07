@@ -137,7 +137,6 @@ dat <- dat_temp[!duplicated(dat_temp$id),]
 #dat is now the final data and it has the length as following:
 length(dat$id)
 
-# save(dat, file = "data/covid_recovery.RData")
 ```
 
 
@@ -152,6 +151,7 @@ data =
          vaccine = factor(dat$vaccine),
          severity = factor(dat$severity)) %>% 
   dplyr::select(-id)
+# save(data, file = "data/covid_recovery.RData")
 head(data)
 
  
@@ -231,7 +231,7 @@ ggplot(train_data, aes(x = LDL, y = recovery_time))+geom_point()+geom_smooth(met
 
 # Resampling method
 ```{r}
-# repeated 10-fold cv
+# 10-fold cv
 ctrl <- trainControl(method = "cv",
                      number = 10)
 ```
