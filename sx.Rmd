@@ -335,3 +335,38 @@ test.error.svml = 1-sum(test_class$recovery_time == test.pred.svml)/length(test_
 sprintf("The test error for Support vector classifier is %.3f", test.error.svml)
 ```
 
+
+
+```{r}
+svmr.grid <- expand.grid(C = exp(seq(-2,6,len=20)),
+                         sigma = exp(seq(-10,-2,len=10)))
+
+# tunes over both cost and sigma
+set.seed(2337)             
+svmr.fit <- train(recovery_time ~ . , 
+                  data = train_class,
+                  method = "svmRadialSigma",
+                  tuneGrid = svmr.grid,
+                  trControl = ctrl)
+
+myCol<- rainbow(25)
+myPar <- list(superpose.symbol = list(col = myCol),
+              superpose.line = list(col = myCol))
+
+plot(svmr.fit, highlight = TRUE, par.settings = myPar)
+
+svmr.fit$bestTune
+
+
+#train error
+train.pred.svmr <- predict(svmr.fit, newdata = train_class)
+train.error.svmr = 1-sum(train_class$recovery_time == train.pred.svmr)/length(train_class$recovery_time)
+sprintf("The train error for Support vector classifier is %.3f", train.error.svmr)
+
+#test error
+test.pred.svmr <- predict(svmr.fit, newdata = test_class)
+test.error.svmr = 1-sum(test_class$recovery_time == test.pred.svmr)/length(test_class$recovery_time)
+sprintf("The test error for Support vector classifier is %.3f", test.error.svmr)
+```
+
+The value is not on the boundary, hence the local maximum accuracy is achieved. It takes a long time (aprox 30 min) to run so it may be hard to refine into a smaller grid.
