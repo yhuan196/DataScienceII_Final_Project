@@ -365,12 +365,6 @@ ctrl_class <- trainControl(method = "cv",
 
 
 * **Penalized logistic regression** 
-
-
-Since the boundary value for $\lambda$ is exp(-10)=4.54e-5 and exp(-5)=0.007, and the optimal lambda is not on the boundary. So local minimum is achieved.
-
-
-* **Penalized logistic regression** 
 * **Generalized additive model (GAM)** 
 * **Multivariate adaptive regression splines (MARS)** 
 * **Linear discriminant analysis (LDA)**
@@ -410,6 +404,7 @@ sprintf("test error for penalized logistic is: %.3f",1-glmn_class_test_acc)
 
 ```
 
+Since the boundary value for $\lambda$ is exp(-10)=4.54e-5 and exp(-5)=0.007, and the optimal lambda is not on the boundary. So local minimum is achieved.
 
 
 
