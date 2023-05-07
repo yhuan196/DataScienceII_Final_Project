@@ -229,17 +229,21 @@ ctrl <- trainControl(method = "cv",
 
 ```{r}
 
-
 #tuning glmnet alpha 0 and 0.05 have large RMSE. So alpha start from 0.1
 set.seed(8)
-enet.fit.min <- train(x, y,
+enet.fit.min <- train(train_x, train_y,
                   method = "glmnet",
                   tuneGrid = expand.grid(alpha = seq(0.1, 1, length = 21), 
-                                         lambda = exp(seq(-10, -4, length = 100))),
+                                         lambda = exp(seq(-10, -5, length = 100))),
                   trControl = ctrl)
 enet.fit.min$bestTune
 plot(enet.fit.min)
 
+
+# view performance on the test set (RMSE)
+enet_test_pred <- predict(enet.fit.min, newdata = test_x) # test dataset
+enet_test_rmse <- sqrt(mean((enet_test_pred - test_y)^2))
+sprintf("test error for enet is: %.3f",enet_test_rmse)
 
 ```
 
@@ -269,7 +273,7 @@ y_test_class <- train_class$recovery_time
 
 
 # ctrl for class
-ctrl_class <- trainControl(method = "repeatedcv",
+ctrl_class <- trainControl(method = "cv",
                      summaryFunction = twoClassSummary,
                      classProbs = TRUE)
 ```
@@ -279,7 +283,7 @@ ctrl_class <- trainControl(method = "repeatedcv",
 
 ```{r}
 glmnGrid <- expand.grid(.alpha = seq(0, 1, length = 21),
-                        .lambda = seq(0, 0.0001, length = 50))
+                        .lambda = exp(seq(-12, -7, length = 50)))
 set.seed(1)
 model.glmn <- train(x = x_train_class,
                     y = y_test_class,
@@ -296,6 +300,25 @@ myPar <- list(superpose.symbol = list(col = myCol),
 
 plot(model.glmn, par.settings = myPar, xTrans = function(x) log(x))
 ```
+
+#### Gam
+
+```{r}
+# gam
+set.seed(8)
+model.gam <- train(x = x_train_class,
+                   y = y_train_class,
+                   method = "gam",
+                   metric = "ROC",
+                   trControl = ctrl_class)
+
+model.gam$bestTune
+model.gam$finalModel
+
+plot(model.gam$finalModel, select = 3)
+
+```
+
 
 
 ```{r}
@@ -342,7 +365,7 @@ svmr.grid <- expand.grid(C = exp(seq(-2,6,len=20)),
                          sigma = exp(seq(-10,-2,len=10)))
 
 # tunes over both cost and sigma
-set.seed(2337)             
+set.seed(8)             
 svmr.fit <- train(recovery_time ~ . , 
                   data = train_class,
                   method = "svmRadialSigma",

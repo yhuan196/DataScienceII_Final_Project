@@ -271,7 +271,7 @@ set.seed(8)
 enet.fit.min <- train(train_x, train_y,
                   method = "glmnet",
                   tuneGrid = expand.grid(alpha = seq(0.1, 1, length = 21), 
-                                         lambda = exp(seq(-10, -4, length = 100))),
+                                         lambda = exp(seq(-10, -5, length = 100))),
                   trControl = ctrl)
 enet.fit.min$bestTune
 plot(enet.fit.min)
