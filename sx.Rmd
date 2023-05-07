@@ -280,6 +280,34 @@ ctrl_class <- trainControl(method = "cv",
 
 ### Logistic enet
 
+```{r}
+glmnGrid <- expand.grid(.alpha = seq(0, 1, length = 21),
+                        .lambda = exp(seq(-12, -7, length = 50)))
+set.seed(8)
+model.glmn <- train(x = x_train_class,
+                    y = y_train_class,
+                    method = "glmnet",
+                    tuneGrid = glmnGrid,
+                    metric = "ROC",
+                    trControl = ctrl_class)
+
+model.glmn$bestTune
+
+myCol<- rainbow(25)
+myPar <- list(superpose.symbol = list(col = myCol),
+              superpose.line = list(col = myCol))
+
+plot(model.glmn, par.settings = myPar, xTrans = function(x) log(x))
+
+
+# view performance on the test set (accuracy)
+glmn_class_test_pred <- predict(model.glmn, newdata=x_test_class) # test dataset
+glmn_class_test_acc <- sum(glmn_class_test_pred==y_test_class)/length(y_test_class)
+sprintf("test error for penalized logistic is: %.3f",1-glmn_class_test_acc)
+
+
+```
+
 
 ```{r}
 glmnGrid <- expand.grid(.alpha = seq(0, 1, length = 21),
@@ -309,15 +337,30 @@ set.seed(8)
 model.gam <- train(x = x_train_class,
                    y = y_train_class,
                    method = "gam",
+                   tuneGrid = data.frame(method = "GCV.Cp", select = c(TRUE,FALSE)),
                    metric = "ROC",
                    trControl = ctrl_class)
 
 model.gam$bestTune
 model.gam$finalModel
 
-plot(model.gam$finalModel, select = 3)
+#discover bmi and recovery time
+plot(model.gam$finalModel, select = 4)
 
+#train error
+train.pred.gam <- predict(model.gam, newdata = x_train_class)
+train.error.gam = 1-sum(train_class$recovery_time == train.pred.gam)/length(train_data$recovery_time)
+sprintf("The train error for GAM is %.3f", train.error.gam)
+
+#test error
+test.pred.gam <- predict(model.gam, newdata = x_test_class)
+test.error.gam = 1-sum(test_class$recovery_time == test.pred.gam)/length(test_class$recovery_time)
+sprintf("The test error for GAM is %.3f", test.error.gam)
 ```
+
+
+
+
 
 
 
@@ -384,12 +427,12 @@ svmr.fit$bestTune
 #train error
 train.pred.svmr <- predict(svmr.fit, newdata = train_class)
 train.error.svmr = 1-sum(train_class$recovery_time == train.pred.svmr)/length(train_class$recovery_time)
-sprintf("The train error for Support vector classifier is %.3f", train.error.svmr)
+sprintf("The train error for Support vector Machine with radial kernel is %.3f", train.error.svmr)
 
 #test error
 test.pred.svmr <- predict(svmr.fit, newdata = test_class)
 test.error.svmr = 1-sum(test_class$recovery_time == test.pred.svmr)/length(test_class$recovery_time)
-sprintf("The test error for Support vector classifier is %.3f", test.error.svmr)
+sprintf("The test error for Support vector Machine with radial kernel is %.3f", test.error.svmr)
 ```
 
 The value is not on the boundary, hence the local maximum accuracy is achieved. It takes a long time (aprox 30 min) to run so it may be hard to refine into a smaller grid.
