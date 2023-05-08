@@ -442,15 +442,23 @@ sprintf("The test error for GAM is %.3f", test.error.gam)
 #### linear SVM
 
 ```{r}
+# parallel computing
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+
 # kernlab
 set.seed(8)
 svml.fit <- train(recovery_time ~ . , 
                   data = train_class, 
                   method = "svmLinear",
-                  tuneGrid = data.frame(C = exp(seq(-4,5,len=10))),
+                  tuneGrid = data.frame(C = exp(seq(-4,9,len=30))),
                   trControl = ctrl)
 
 plot(svml.fit, highlight = TRUE, xTrans = log)
+
+stopCluster(cl)
+registerDoSEQ()
 
 #train error
 train.pred.svml <- predict(svml.fit, newdata = train_class)
@@ -470,6 +478,11 @@ sprintf("The test error for Support vector classifier is %.3f", test.error.svml)
 svmr.grid <- expand.grid(C = exp(seq(-4,3,len=20)),
                          sigma = exp(seq(-10,-2,len=10)))
 
+# parallel computing
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+
 # tunes over both cost and sigma
 set.seed(8)             
 svmr.fit <- train(recovery_time ~ . , 
@@ -477,6 +490,11 @@ svmr.fit <- train(recovery_time ~ . ,
                   method = "svmRadialSigma",
                   tuneGrid = svmr.grid,
                   trControl = ctrl)
+
+stopCluster(cl)
+registerDoSEQ()
+
+
 
 myCol<- rainbow(25)
 myPar <- list(superpose.symbol = list(col = myCol),
