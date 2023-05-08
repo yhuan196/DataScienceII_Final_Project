@@ -99,13 +99,17 @@ test_y <- test_data$recovery_time
 ```
 
 
-
-
-
-# boosting
+# primary analysis
 
 ```{r}
-ctrlbbb <- trainControl(method = "cv")
+# 10-fold cv
+ctrl <- trainControl(method = "cv",
+                     number = 10)
+```
+
+## boosting
+
+```{r}
 
 gbm.grid <- expand.grid(n.trees = c(5000,10000,20000,30000,40000,50000),
                         interaction.depth = 1:3,
@@ -116,7 +120,7 @@ set.seed(8)
 gbm.fit = train(recovery_time~. ,
                   train_data,
                   tuneGrid = gbm.grid,
-                  trControl = ctrlbbb,
+                  trControl = ctrl,
                   method = "gbm",
                   verbose = FALSE)
 ggplot(gbm.fit, highlight = TRUE)
@@ -126,6 +130,7 @@ ggplot(gbm.fit, highlight = TRUE)
 ```{r}
 gbm.fit$bestTune
 ```
+
 
 test error
 ```{r}
@@ -188,15 +193,22 @@ ggplot(gbmA.fit, highlight = TRUE)
 ```
 
 
-test error
 ```{r}
-gbmA.pred = predict(gbmA.fit, newdata = OJ[-rowTrain,], type = "raw")
-mean(gbmA.pred != y_test_class)
+#train error
+train.pred.boosting = predict(gbmA.fit , newdata = train_class, type = "raw")
+train.error.boosting = 1-sum(train_class$recovery_time == train.pred.boosting)/length(train_data$recovery_time)
+sprintf("The train error for boosting is %.3f", train.pred.boosting)
+
+#test error
+test.pred.boosting = predict(gbmA.fit , newdata = test_class, type = "raw")
+test.error.boosting = 1-sum(test_class$recovery_time == test.pred.boosting)/length(test_class$recovery_time)
+sprintf("The train error for boosting is %.3f", train.pred.boosting)
 ```
 
 
-# mars
 
+
+# mars
 ```{r}
 set.seed(8)
 mars.fit = train(x = train_class,
@@ -208,10 +220,18 @@ mars.fit = train(x = train_class,
                          trControl = ctrl_class)
 ```
 
-test error
+
 ```{r}
-mars.pred = predict(mars.fit , newdata = test_class, type = "prob")[,2]
-roc(y_test_class, mars.pred)
+#train error
+train.pred.mars = predict(mars.fit , newdata = train_class, type = "prob")[,2]
+train.error.mars = 1-sum(train_class$recovery_time == train.pred.mars)/length(train_data$recovery_time)
+sprintf("The train error for MARS is %.3f", train.error.mars)
+
+#test error
+test.pred.mars = predict(mars.fit , newdata = test_class, type = "prob")[,2]
+test.error.mars = 1-sum(test_class$recovery_time == test.pred.mars)/length(test_class$recovery_time)
+sprintf("The test error for MARS is %.3f", test.error.mars)
 ```
+
 
 
