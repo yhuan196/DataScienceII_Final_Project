@@ -39,6 +39,7 @@ library(mgcv)
 library(nlme)
 library(earth)
 library(vip)
+library(ranger)
 library(doParallel) # parallel computing
 library(MASS) # lda
 ```
@@ -148,14 +149,75 @@ ctrl <- trainControl(method = "cv",
 ## primary analysis (Regression)
 
 * **Linear regression**
+* **K-Nearest Neighbors (KNN)**
 * **Partial least squares (PLS)**
 * **Generalized Additive Model (GAM)**
 * **Multivariate Adaptive Regression Splines (MARS)**
 * **Elastic net**
+* **Random Forest**
 * **Boosting**
-* **Random forest**
 
-### Generalised additive regression
+
+### Linear regression
+
+```{r}
+## fit linear model on train data
+set.seed(8)
+linear_model <- train(train_x,
+                      train_y,
+                      method = "lm", 
+                      trControl = ctrl)
+summary(linear_model)
+
+# view performance on the test set (RMSE)
+lm_test_pred <- predict(linear_model, newdata = test_x) # test dataset
+lm_test_rmse <- sqrt(mean((lm_test_pred - test_y)^2))
+sprintf("test error for lm is: %.3f", lm_test_rmse)
+```
+
+
+### K-Nearest Neighbors (KNN)
+
+```{r}
+# fit knn on train data use caret
+kGrid <- expand.grid(k = seq(1, to = 40, by = 1))
+knn_model <- train(train_x,
+                   train_y,
+                   method = "knn",
+                   trControl = ctrl,
+                   tuneGrid = kGrid)
+ggplot(knn_model, highlight = TRUE)
+# knn with K = 18 was selected as the final model
+
+# view performance on the test set (RMSE)
+knn_test_pred <- predict(knn_model, newdata = test_x) # test dataset
+knn_test_rmse <- sqrt(mean((knn_test_pred - test_y)^2))
+sprintf("test error for K-Nearest Neighbors is: %.3f", knn_test_rmse)
+```
+
+
+#### PLS
+
+```{r}
+set.seed(8)
+pls_model <- train(train_x,
+                   train_y,
+                   method = "pls",
+                   tuneGrid = data.frame(ncomp = 1:16),
+                   trControl = ctrl,
+                   preProcess = c("center", "scale"))
+ggplot(pls_model, highlight = TRUE)
+ggsave(file = "image/pls_number_of_component.png", width = 10, height = 7)
+
+# view performance on the test set (RMSE)
+pls_test_pred <- predict(pls_model, newdata = test_x) # test dataset
+pls_test_rmse <- sqrt(mean((pls_test_pred - test_y)^2))
+sprintf("test error for pls is: %.3f",pls_test_rmse)
+
+```
+
+
+### Generalised additive regression (GAM)
 
 ```{r}
 # gam use caret
@@ -173,13 +235,14 @@ summary(gam_model$finalModel)
 # view performance on the test set (RMSE)
 gam_test_pred <- predict(gam_model, newdata = test_x) # test dataset
 gam_test_rmse <- sqrt(mean((gam_test_pred - test_y)^2))
-gam_test_rmse
+sprintf("test error for Generalised additive regression is: %.3f", knn_test_rmse)
 ```
+
 
 ### Multivariate adaptive regression 
 
 ```{r}
-set.seed(2337)
+set.seed(8)
 
 # create dummy variables for categorical variables
 df_dummies <- data.frame(model.matrix(~ . - 1, 
@@ -223,16 +286,37 @@ summary(mars_model$finalModel)
 
 # view performance on the test set (RMSE)
 mars_test_pred <- predict(mars_model, newdata = x2_mars) # test dataset
-mars_test_rmse <- sqrt(mean((mars_test_pred - data_test_mars$recovery_time)^2))
-sprintf("test error for mars is: %.3f", mars_test_rmse)
+mars_test_rmse <- sqrt(mean((mars_test_pred - test_y)^2))
+sprintf("test error for MARS is: %.3f", mars_test_rmse)
 ```
 
+
+### Enet
+
+```{r}
+#tuning glmnet alpha 0 and 0.05 have large RMSE. So alpha start from 0.1
+set.seed(8)
+enet.fit.min <- train(train_x, train_y,
+                  method = "glmnet",
+                  tuneGrid = expand.grid(alpha = seq(0.1, 1, length = 21), 
+                                         lambda = exp(seq(-10, -5, length = 100))),
+                  trControl = ctrl)
+enet.fit.min$bestTune
+plot(enet.fit.min)
+
+
+# view performance on the test set (RMSE)
+enet_test_pred <- predict(enet.fit.min, newdata = test_x) # test dataset
+enet_test_rmse <- sqrt(mean((enet_test_pred - test_y)^2))
+sprintf("test error for enet is: %.3f",enet_test_rmse)
+
+```
 
 ### Random Forest - Regression
 
 ```{r}
-set.seed(2337)
-rf.grid <- expand.grid(mtry = 1:15,
+set.seed(8)
+rf.grid <- expand.grid(mtry = 1:14,
                        splitrule = "variance",
                        min.node.size = seq(from = 1, to = 50, by = 5))
 
@@ -247,10 +331,18 @@ rf_model <- train(recovery_time ~ . ,
                   tuneGrid = rf.grid,
                   trControl = ctrl)
 
+rf_model2 <- train(train_x, 
+                   train_y, 
+                   method = "ranger",
+                   tuneGrid = rf.grid,
+                   trControl = ctrl)
+
 stopCluster(cl)
 registerDoSEQ()
 ggplot(rf_model, highlight = TRUE)
 rf_model$bestTune
+ggplot(rf_model2, highlight = TRUE)
+rf_model2$bestTune
 
 # variable importance
 rf.final.per <- ranger(recovery_time ~ . , 
@@ -268,9 +360,24 @@ barplot(sort(ranger::importance(rf.final.per), decreasing = FALSE),
 # view performance on the test set (RMSE)
 rf_test_pred <- predict(rf_model, newdata = test_data) # test dataset
 rf_test_rmse <- sqrt(mean((rf_test_pred - test_y)^2))
-sprintf("test error for rf is: %.3f", rf_test_rmse)
+sprintf("test error for Random Forest is: %.3f", rf_test_rmse)
 ```
 
+## resampling on train
+```{r}
+set.seed(8)
+resamp <- resamples(list(lm = linear_model,
+                         knn = knn_model,
+                         pls = pls_model,
+                         gam = gam_model,
+                         mars = mars_model,
+                         enet = enet.fit.min,
+                         rf = rf_model,
+                         rf2 = rf_model2))
+summary(resamp)
+parallelplot(resamp, metric = "RMSE")
+bwplot(resamp, metric = "RMSE")
+```
 
 
 ## Secondary analysis (Classification)
@@ -279,8 +386,10 @@ sprintf("test error for rf is: %.3f", rf_test_rmse)
 * **Generalized additive model (GAM)** 
 * **Multivariate adaptive regression splines (MARS)** 
 * **Linear discriminant analysis (LDA)**
+* **Classification and Regression Tree (CART)**
 * **Random Forest**
 * **Boosting**
+* **Support Vector Machine (SVM with Linear and Radial Kernels)**
 
 
 ### Data Manipulation
@@ -315,7 +424,7 @@ no_cores <- detectCores() - 1
 
 ### Linear discriminant analysis (LDA)
 ```{r}
-set.seed(2337)
+set.seed(8)
 # Using MASS
 lda.fit <- lda(recovery_time~., 
                data = train_class)
@@ -343,7 +452,7 @@ sprintf("The test error for LDA is %.3f", test.error.lda)
 
 ### Random Forest - Classification
 ```{r}
-set.seed(2337)
+set.seed(8)
 cl <- makePSOCKcluster(no_cores)
 registerDoParallel(cl)
 rf.grid <- expand.grid(mtry = 1:18,
@@ -373,4 +482,4 @@ test.pred.rf <- predict(rf_class_model, newdata = x_test_class)
 test.error.rf = 1 - sum(test_class$recovery_time == test.pred.rf)/length(test_class$recovery_time)
 sprintf("The test error for Random Forest is %.3f", test.error.rf)
 ```
-#### 11:19pm-11:25pm approximately 7 mins
+#### 11:19pm-11:25pm approximately 6 mins
