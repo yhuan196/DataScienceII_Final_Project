@@ -40,6 +40,7 @@ library(nlme)
 library(earth)
 library(vip)
 library(doParallel) # parallel computing
+library(MASS) # lda
 ```
 
 
@@ -222,12 +223,12 @@ summary(mars_model$finalModel)
 
 # view performance on the test set (RMSE)
 mars_test_pred <- predict(mars_model, newdata = x2_mars) # test dataset
-mars_test_rmse <- sqrt(mean((mars_test_pred - dat_test_mars$recovery_time)^2))
+mars_test_rmse <- sqrt(mean((mars_test_pred - data_test_mars$recovery_time)^2))
 sprintf("test error for mars is: %.3f", mars_test_rmse)
 ```
 
 
-### Random Forest
+### Random Forest - Regression
 
 ```{r}
 set.seed(2337)
@@ -268,5 +269,80 @@ barplot(sort(ranger::importance(rf.final.per), decreasing = FALSE),
 rf_test_pred <- predict(rf_model, newdata = test_data) # test dataset
 rf_test_rmse <- sqrt(mean((rf_test_pred - test_y)^2))
 sprintf("test error for rf is: %.3f", rf_test_rmse)
+```
+
+
+
+## Secondary analysis (Classification)
+
+* **Penalized logistic regression** 
+* **Generalized additive model (GAM)** 
+* **Multivariate adaptive regression splines (MARS)** 
+* **Linear discriminant analysis (LDA)**
+* **Random Forest**
+* **Boosting**
+
+
+### Data Manipulation
+```{r}
+#consider time to recovery as a binary outcome (>30 days vs. <= 30 days) and develop a prediction model for this binary outcome.
+train_class = 
+  train_data %>% 
+  mutate(recovery_time = ifelse(recovery_time>30, "long", "short"))
+
+test_class = 
+  test_data %>% 
+  mutate(recovery_time = ifelse(recovery_time>30, "long", "short"))
+
+# matrix of predictors
+x_train_class <- model.matrix(recovery_time~.,train_class)[,-1]
+# vector of response
+y_train_class <- train_class$recovery_time
+
+
+# matrix of predictors
+x_test_class <- model.matrix(recovery_time~.,test_class)[,-1]
+# vector of response
+y_test_class <- test_class$recovery_time
+
+
+# ctrl for class
+ctrl_class <- trainControl(method = "cv",
+                           summaryFunction = twoClassSummary,
+                           classProbs = TRUE)
+```
+
+### Linear discriminant analysis (LDA)
+```{r}
+set.seed(2337)
+# Using MASS
+lda.fit <- lda(recovery_time~., 
+               data = train_class)
+plot(lda.fit)
+lda.fit$scaling
+
+# Using caret
+lda_model <- train(x_train_class, #train x
+                   y_train_class, #train y 
+                   method = "lda", 
+                   metric = "ROC", 
+                   trControl = ctrl_class)
+summary(lda_model)
+
+#train error
+train.pred.lda <- predict(lda_model, newdata = x_train_class)
+train.error.lda = 1-sum(train_class$recovery_time == train.pred.lda)/length(train_data$recovery_time)
+sprintf("The train error for LDA is %.3f", train.error.lda)
+
+#test error
+test.pred.lda <- predict(lda_model, newdata = x_test_class)
+test.error.lda = 1-sum(test_class$recovery_time == test.pred.lda)/length(test_class$recovery_time)
+sprintf("The test error for LDA is %.3f", test.error.lda)
+```
+
+### Random Forest - Classification
+```{r}
+set.seed(2337)
+
 ```
 
