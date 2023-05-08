@@ -1,0 +1,138 @@
+---
+title: |
+  | \vspace{5cm} \LARGE Predicting Recovery Time of Patients with Covid-19
+subtitle: "Data Science II Final Project"
+author: "Yi Huang, Yuchen Zhang, Shun Xie"
+date: "May 8, 2023"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: false
+    toc_depth: 2
+  keep_tex: true
+  html_document:
+header-includes:
+- \usepackage{placeins}
+- \usepackage{caption}
+- \usepackage{fancyhdr}
+- \usepackage{lipsum}
+- \fancyhead[R]{\thepage}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE, 
+                      warning = FALSE, 
+                      fig.align = "center",
+                      fig.width = 8, 
+                      fig.height = 6,
+                      out.width = "90%")
+```
+
+\newpage
+```{r, echo = FALSE}
+library(gtsummary)
+library(tidyverse)
+```
+
+# Abstract
+
+This project applies varies regression and classfication methods to predict the recovery time of participants with Covid-19 to estimate the recovery time of these participants. The ultimate goal is to develop a prediction model for recovery time and identify important risk factors for long recovery time. The dataset is from a study that combines three existing cohort studies that have been tracking participants for several years.
+
+# 1 Introduction
+
+## 1.1 Background
+
+To gain a better understanding of the factors that predict recovery time from COVID-19 illness, a study was designed to combine three existing cohort studies that have been tracking participants for several years. The study collects recovery information through questionnaires and medical records, and leverages existing data on personal characteristics prior to the pandemic. The ultimate goal is to develop a prediction model for recovery time and identify important risk factors for long recovery time.
+
+## 1.2 Data Description
+
+The dataset is a random sample of 3593 participants draw from `"recovery.RData` includes 16 variables and 3593 observations. 
+
+Description of each variable:
+
+- Gender (gender): 1 = Male, 0 = Female; 
+- Race/ethnicity (race): 1 = White, 2 = Asian, 3 = Black, 4 = Hispanic; 
+- Smoking (smoking): Smoking status; 0 = Never smoked, 1 = Former smoker, 2 = Current smoker;
+- Height (height): Height (in centimeters);
+- Weight (weight): Weight (in kilograms);
+- BMI (bmi): Body Mass Index; BMI = weight (in kilograms) / height (in meters) squared;
+- Hypertension (hypertension): 0 = No, 1 = Yes;
+- Diabetes (diabetes): 0 = No, 1 = Yes;
+- Systolic blood pressure (SBP): Systolic blood pressure (in mm/Hg);
+- (10)LDL cholesterol (LDL): LDL (low-density lipoprotein) cholesterol (in mg/dL);
+- Vaccination status at the time of infection (vaccine): 0 = Not vaccinated, 1 = Vaccinated;
+- Severity of COVID-19 infection (severity): 0 = Not severe, 1= Severe;
+- Study (study): The study (A/B/C) that the participant belongs to;
+- Age: age of participants;
+- Time to recovery (tt_recovery_time): Time from COVID-19 infection to recovery in days;
+- ID: unique id of each participant.
+
+## 1.3 Data Cleaning
+
+```{r, echo=FALSE}
+# load data
+load("data/covid_recovery.Rdata")
+
+dat <- data %>% 
+  mutate(gender = factor(gender),
+         hypertension = factor(hypertension),
+         diabetes = factor(diabetes),
+         vaccine = factor(vaccine),
+         severity = factor(severity),
+         study = factor(study),
+)
+
+# dat %>% select(age, height, weight, bmi, SBP, LDL,
+#                recovery_time, gender, race, smoking,
+#                hypertension, diabetes, vaccine, severity,
+#                study) %>% tbl_summary() %>% modify_caption("**Summary of Dataset**")
+
+dat %>% select(age, height, weight, bmi, SBP, LDL, 
+               recovery_time, gender, race, smoking, 
+               hypertension, diabetes, vaccine, severity, 
+               study) %>% tbl_summary(by = study) %>% modify_caption("**Summary of Dataset by Study Group**")
+```
+
+
+
+# 2 Exploratory analysis and data visualization:
+
+
+
+
+# 3 Model training
+
+This section describes the models used for predicting time to recovery from COVID-19. State the assumptions made by using the models and detailed description of the model training procedure and how to obtained the final model.
+
+
+
+
+# 4 Results 
+
+In this section, report the final model that you built for predicting time to recovery from COVID-19. Interpret the results. Assess the model's training/test performance.
+
+
+
+# 5 Conclusions and discussion
+
+
+
+
+# References
+
+CDC Covid Data Tracker. (2021), Centers for Disease Control and Prevention.\
+\
+James, Gareth, e. a. (2021), An Introduction to Statistical Learning: With Applications in R., Springer.\
+\
+Pradhan, A. and Olsson., P.-E. (2021), ‘Sex differences in severity and mortality from covid- 19: are males more vulnerable?’, Biology of sex differences 11(1), 53.\
+\
+
+# A Appendix: Figure
+
+![example](image/pls_number_of_component.png){width=80%}
+
+
+
+
+# B Appendix: Code
