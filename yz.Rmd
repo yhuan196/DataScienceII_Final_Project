@@ -1,0 +1,217 @@
+---
+title: "Data science final guideline"
+author: "Yi Huang, Yuchen Zhang, Shun Xie"
+date: "2023-04-28"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc: yes
+    toc_depth: 2
+  fontsize: 10pt
+  geometry: margin=0.5in
+  header-includes:
+    -\usepackage{fancyhdr}
+    -\usepackage{lipsum}
+    -\pagestyle{fancy}
+    -\fancyhead[R]{\thepage}
+    -\fancypagestyle{plain}{\pagestyle{fancy}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.align = "center",
+                      fig.width = 8, 
+                      fig.height = 6,
+                      out.width = "90%")
+```
+
+
+
+
+```{r, message=FALSE, warning=FALSE}
+library(caret)
+library(corrplot)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(ISLR)
+library(glmnet)
+library(mgcv)
+library(nlme)
+library(earth)
+library(vip)
+library(pROC)
+```
+
+## Introduction
+```{r}
+#load data
+load("data/recovery.RData")
+
+#get data from 2 team members uni
+set.seed(3554)
+dat1 <- dat[sample(1:10000, 2000),]
+set.seed(4437)
+dat2 <- dat[sample(1:10000, 2000),]
+
+#combine the data and discard duplicates
+dat_temp <- rbind(dat1, dat2)
+dat <- dat_temp[!duplicated(dat_temp$id),]
+
+#dat is now the final data and it has the length as following:
+length(dat$id)
+
+# save(dat, file = "data/covid_recovery.RData")
+```
+
+
+```{r}
+# data manipulation
+data = 
+  dat %>% 
+  mutate(study = factor(dat$study),
+         gender = factor(dat$gender),
+         hypertension = factor(dat$hypertension),
+         diabetes = factor(dat$diabetes),
+         vaccine = factor(dat$vaccine),
+         severity = factor(dat$severity)) %>% 
+  dplyr::select(-id)
+head(data)
+
+ 
+#Split data into 70-300, using the third member's uni
+set.seed(2337)
+indexTrain <- createDataPartition(y = data$recovery_time, p = 0.7, list = FALSE)
+
+# training data
+train_data <- data[indexTrain,]
+# matrix of predictors
+train_x <- model.matrix(recovery_time~.,train_data)[,-1]
+# vector of response
+train_y <- train_data$recovery_time
+
+# test data
+test_data <- data[-indexTrain,]
+# matrix of predictors
+test_x <- model.matrix(recovery_time~.,test_data)[,-1]
+# vector of response
+test_y <- test_data$recovery_time
+```
+
+
+
+
+
+# boosting
+
+```{r}
+ctrlbbb <- trainControl(method = "cv")
+
+gbm.grid <- expand.grid(n.trees = c(5000,10000,20000,30000,40000,50000),
+                        interaction.depth = 1:3,
+                        shrinkage = c(0.005,0.01),
+                        n.minobsinnode = c(1))
+
+set.seed(8)
+gbm.fit = train(recovery_time~. ,
+                  train_data,
+                  tuneGrid = gbm.grid,
+                  trControl = ctrlbbb,
+                  method = "gbm",
+                  verbose = FALSE)
+ggplot(gbm.fit, highlight = TRUE)
+```
+
+
+```{r}
+gbm.fit$bestTune
+```
+
+test error
+```{r}
+gbm.fit.predict = predict(gbm.fit, newdata = test_data)
+RMSE(gbm.fit.predict, test_y)
+```
+
+#class
+
+```{r}
+#consider time to recovery as a binary outcome (>30 days vs. <= 30 days) and develop a prediction model for this binary outcome.
+train_class = 
+  train_data %>% 
+  mutate(recovery_time = ifelse(recovery_time>30, "long", "short"))
+
+test_class = 
+  test_data %>% 
+  mutate(recovery_time = ifelse(recovery_time>30, "long", "short"))
+
+# matrix of predictors
+x_train_class <- model.matrix(recovery_time~.,train_class)[,-1]
+# vector of response
+y_train_class <- train_class$recovery_time
+
+
+# matrix of predictors
+x_test_class <- model.matrix(recovery_time~.,test_class)[,-1]
+# vector of response
+y_test_class <- test_class$recovery_time
+
+
+# ctrl for class
+ctrl_class <- trainControl(method = "repeatedcv",
+                     summaryFunction = twoClassSummary,
+                     classProbs = TRUE)
+```
+
+# boosting
+
+```{r}
+
+gbmA.grid = expand.grid(n.trees = c(3000,4000,5000),
+                         interaction.depth = 1:3,
+                         shrinkage = c(0.0005,0.001,0.002),
+                         n.minobsinnode = 1)
+set.seed(8)
+gbmA.fit = train(recovery_time~. ,
+                  train_class,
+                  tuneGrid = gbmA.grid,
+                  trControl = ctrl_class,
+                  method = "gbm",
+                  distribution = "adaboost",
+                  metric = "ROC",
+                  verbose = FALSE)
+```
+
+
+```{r}
+ggplot(gbmA.fit, highlight = TRUE)
+```
+
+
+test error
+```{r}
+gbmA.pred = predict(gbmA.fit, newdata = OJ[-rowTrain,], type = "raw")
+mean(gbmA.pred != y_test_class)
+```
+
+
+# mars
+
+```{r}
+set.seed(8)
+mars.fit = train(x = train_class,
+                        y =  y_train_class,
+                         method = "earth",
+                         tuneGrid = expand.grid(degree = 1:3, 
+                                                nprune = 2:20),
+                         metric = "ROC",
+                         trControl = ctrl_class)
+```
+
+test error
+```{r}
+mars.pred = predict(mars.fit , newdata = test_class, type = "prob")[,2]
+roc(y_test_class, mars.pred)
+```
+
+
