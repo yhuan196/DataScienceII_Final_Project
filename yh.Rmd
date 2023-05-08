@@ -310,6 +310,7 @@ y_test_class <- test_class$recovery_time
 ctrl_class <- trainControl(method = "cv",
                            summaryFunction = twoClassSummary,
                            classProbs = TRUE)
+no_cores <- detectCores() - 1
 ```
 
 ### Linear discriminant analysis (LDA)
@@ -331,18 +332,45 @@ summary(lda_model)
 
 #train error
 train.pred.lda <- predict(lda_model, newdata = x_train_class)
-train.error.lda = 1-sum(train_class$recovery_time == train.pred.lda)/length(train_data$recovery_time)
+train.error.lda = 1 - sum(train_class$recovery_time == train.pred.lda)/length(train_data$recovery_time)
 sprintf("The train error for LDA is %.3f", train.error.lda)
 
 #test error
 test.pred.lda <- predict(lda_model, newdata = x_test_class)
-test.error.lda = 1-sum(test_class$recovery_time == test.pred.lda)/length(test_class$recovery_time)
+test.error.lda = 1 - sum(test_class$recovery_time == test.pred.lda)/length(test_class$recovery_time)
 sprintf("The test error for LDA is %.3f", test.error.lda)
 ```
 
 ### Random Forest - Classification
 ```{r}
 set.seed(2337)
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+rf.grid <- expand.grid(mtry = 1:18,
+                       splitrule = "gini",
+                       min.node.size = seq(from = 1, to = 50, by = 5))
+rf_class_model <- train(x_train_class,
+                        y_train_class,
+                        method = "ranger",
+                        importance = "permutation",
+                        tuneGrid = rf.grid,
+                        metric = "ROC",
+                        trControl = ctrl_class)
+stopCluster(cl)
+registerDoSEQ()
 
+ggplot(rf_class_model, highlight = TRUE)
+rf_class_model$bestTune
+
+
+#train error
+train.pred.rf <- predict(lda_model, newdata = x_train_class)
+train.error.ef = 1 - sum(train_class$recovery_time == train.pred.lda)/length(train_data$recovery_time)
+sprintf("The train error for LDA is %.3f", train.error.lda)
+
+#test error
+test.pred.rf <- predict(rf_class_model, newdata = x_test_class)
+test.error.rf = 1 - sum(test_class$recovery_time == test.pred.rf)/length(test_class$recovery_time)
+sprintf("The test error for Random Forest is %.3f", test.error.rf)
 ```
-
+#### 11:19pm-11:25pm approximately 7 mins
