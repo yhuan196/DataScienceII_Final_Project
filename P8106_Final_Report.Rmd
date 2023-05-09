@@ -83,10 +83,7 @@ dat <- data %>%
          study = factor(study),
 )
 
-# dat %>% select(age, height, weight, bmi, SBP, LDL,
-#                recovery_time, gender, race, smoking,
-#                hypertension, diabetes, vaccine, severity,
-#                study) %>% tbl_summary() %>% modify_caption("**Summary of Dataset**")
+
 
 dat %>% select(age, height, weight, bmi, SBP, LDL, 
                recovery_time, gender, race, smoking, 
@@ -102,7 +99,7 @@ We consider the EDA for the training data, which we will use later on to train o
 
 Distribution of data is included in appendix 1. In accordance to distribution of continuous variables, only the recovery time, which is the response, has a right skewed shape. All predictors are normally distributed with symmetric density plot. \\
 
-The correlation plot (only considers continuous variable), calculated from Pearson Correlation in appendix 2, gives an insight of linear correlation between continuous predictors and transformed recovery time. It can be seen that bmi and weight have a relatively weak positive relation with log recovery time whereas height may have a weak negative linear correlation with log recovery time. While linear trend may be sufficient in some cases, some data may show a non-linear correlation with log recovery time. As shown in appendix 3, weight and bmi is likely to have a non-linear correlation with the response, suggesting a motivation to consider non-linear method.
+The correlation plot (only considers continuous variable), calculated from Pearson Correlation in appendix 2, gives an insight of linear correlation between continuous predictors and transformed recovery time. It can be seen that bmi and weight have a relatively weak positive relation with log recovery time whereas height may have a weak negative linear correlation with log recovery time. While linear trend may be sufficient in some cases, some data may show a non-linear correlation with log recovery time. As shown in appendix 3, weight and bmi is likely to have a non-linear correlation with the response, suggesting a motivation to consider non-linear method. Box plot in appendix 4 illustrates that most data have a small difference in median. People with smoking is likely to have a higher recovery time as it has a higher median and people that are vaccinated has a lower median recovery time than the people without vaccination. Thus, we include these factors in our study of predicting recovery time.  
 
 
 
@@ -144,10 +141,13 @@ James, Gareth, e. a. (2021), An Introduction to Statistical Learning: With Appli
 Pradhan, A. and Olsson., P.-E. (2021), ‘Sex differences in severity and mortality from covid- 19: are males more vulnerable?’, Biology of sex differences 11(1), 53.\
 \
 
+\newpage
 
 # Appendix
 
 ## Appendix 1
+
+\newpage
 
 ```{r,echo=FALSE}
 
@@ -171,8 +171,6 @@ dat2 <- dat[sample(1:10000, 2000),]
 dat_temp <- rbind(dat1, dat2)
 dat <- dat_temp[!duplicated(dat_temp$id),]
 
-#dat is now the final data and it has the length as following:
-length(dat$id)
 
 # data manipulation
 data = 
@@ -249,8 +247,11 @@ corrplot(res, type = "upper", order = "hclust",
          tl.col = "black", tl.srt = 45)
 ```
 
+\newpage
 
 ## Appendix 3
+
+\newpage
 
 ```{r,echo = FALSE}
 
@@ -265,6 +266,32 @@ grid.arrange(recovery_age, recovery_height, recovery_weight, recovery_bmi, ncol=
 grid.arrange(recovery_sbp, recovery_ldl,nrow = 2, ncol=2)
 ```
 
+
+## Appendix4
+
+\newpage
+
+
+```{r, echo = FALSE}
+gender_box = ggplot(data, aes(x = as.factor(gender), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different gender")
+
+race_box = ggplot(data, aes(x = as.factor(race), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different race")
+
+smoking_box = ggplot(data, aes(x = as.factor(smoking), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different smoking")
+
+hypertension_box = ggplot(data, aes(x = as.factor(hypertension), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different hypertension")
+
+diabete_box = ggplot(data, aes(x = as.factor(diabetes), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different diabetes")
+
+vaccine_box = ggplot(data, aes(x = as.factor(vaccine), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different vaccine")
+
+severity_box = ggplot(data, aes(x = as.factor(severity), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different severity")
+
+study_box = ggplot(data, aes(x = as.factor(study), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different study")
+
+grid.arrange(gender_box, race_box, smoking_box, hypertension_box, ncol=2)
+grid.arrange(diabete_box, vaccine_box,severity_box, study_box, ncol=2)
+```
 
 
 
