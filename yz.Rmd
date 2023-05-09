@@ -223,7 +223,22 @@ sprintf("The test error for boosting is %.3f", test.error.mars)
 ```
 
 
+```{r}
+#vip
+summary(gbm.fit$finalModel, las = 2, cBars = 16, cex.names = 0.6)
+```
 
+
+```{r}
+#pdp
+features = c("bmi", "study", "height", "LDL", "weight", "vaccine")
+
+pdps <- lapply(features, function(x) {
+  partial(gbm.fit, pred.var = x, which.class = 2,
+          prob = TRUE, plot = TRUE, plot.engine = "ggplot2")
+})
+grid.arrange(grobs = pdps,  ncol = 3)
+```
 
 # mars
 ```{r}
