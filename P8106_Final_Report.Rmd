@@ -112,7 +112,15 @@ This section describes the models used for predicting time to recovery from COVI
 
 # 4 Results for regression
 
-In this section, report the final model that you built for predicting time to recovery from COVID-19. Interpret the results. Assess the model's training/test performance.
+After resampling, 8 models share a common set of resampled datasets. The boosting model has least  mean value of RMSE. The RMSE of all four model are showed below.
+```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+knitr::include_graphics("model_result_008_files/figure-gfm/unnamed-chunk-11-2.png")
+```
+variable importance and partial dependence plots for interpretation. 
+```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+knitr::include_graphics("image/boosting_vip.png")
+knitr::include_graphics("image/boosting_pdp.png")
+```
 
 
 # 5 Model training for classification
