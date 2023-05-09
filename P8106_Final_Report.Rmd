@@ -119,6 +119,13 @@ knitr::include_graphics("model_result_008_files/figure-gfm/unnamed-chunk-11-2.pn
 variable importance and partial dependence plots for interpretation. 
 ```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '100%'}
 knitr::include_graphics("image/boosting_vip.png")
+```
+Variable importance plot indicates that the bmi, study and height are most influential in the model among all the predictors. 
+
+Interpretions of some significant coefficients: Hold other condition same, people have higher value of bmi, people who are in Study B and people have higher height are expected to have more recovery time.
+
+
+```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '100%'}
 knitr::include_graphics("image/boosting_pdp.png")
 ```
 
