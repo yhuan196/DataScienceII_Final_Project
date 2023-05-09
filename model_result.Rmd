@@ -636,12 +636,12 @@ ggplot(gbmA.fit, highlight = TRUE)
 #train error
 train.pred.boosting = predict(gbmA.fit , newdata = train_class, type = "raw")
 train.error.boosting = 1-sum(train_class$recovery_time == train.pred.boosting)/length(train_data$recovery_time)
-sprintf("The train error for boosting is %.3f", train.pred.boosting)
+# sprintf("The train error for boosting is %.3f", train.pred.boosting)
 
 #test error
 test.pred.boosting = predict(gbmA.fit , newdata = test_class, type = "raw")
 test.error.boosting = 1-sum(test_class$recovery_time == test.pred.boosting)/length(test_class$recovery_time)
-sprintf("The train error for boosting is %.3f", train.pred.boosting)
+# sprintf("The test error for boosting is %.3f", train.pred.boosting)
 ```
 
 
