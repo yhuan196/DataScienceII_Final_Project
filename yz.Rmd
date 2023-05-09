@@ -22,7 +22,10 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.align = "center",
                       fig.width = 8, 
                       fig.height = 6,
-                      out.width = "90%")
+                      out.width = "90%"
+                      fig.path = "images/"
+)
+```
 ```
 
 
@@ -150,6 +153,23 @@ gbm.fit.predict = predict(gbm.fit, newdata = test_data)
 RMSE(gbm.fit.predict, test_y)
 ```
 
+```{r}
+#vip
+summary(gbm.fit$finalModel, las = 2, cBars = 16, cex.names = 0.6)
+```
+
+
+```{r}
+#pdp
+features = c("bmi", "study", "height", "LDL", "weight", "vaccine")
+
+pdps <- lapply(features, function(x) {
+  partial(gbm.fit, pred.var = x, which.class = 2,
+          prob = TRUE, plot = TRUE, plot.engine = "ggplot2")
+})
+grid.arrange(grobs = pdps,  ncol = 3)
+```
+
 #class
 
 ```{r}
@@ -223,22 +243,6 @@ sprintf("The test error for boosting is %.3f", test.error.mars)
 ```
 
 
-```{r}
-#vip
-summary(gbm.fit$finalModel, las = 2, cBars = 16, cex.names = 0.6)
-```
-
-
-```{r}
-#pdp
-features = c("bmi", "study", "height", "LDL", "weight", "vaccine")
-
-pdps <- lapply(features, function(x) {
-  partial(gbm.fit, pred.var = x, which.class = 2,
-          prob = TRUE, plot = TRUE, plot.engine = "ggplot2")
-})
-grid.arrange(grobs = pdps,  ncol = 3)
-```
 
 # mars
 ```{r}
