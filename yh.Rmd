@@ -150,10 +150,10 @@ ctrl <- trainControl(method = "cv",
 
 * **Linear regression**
 * **K-Nearest Neighbors (KNN)**
+* **Elastic net**
 * **Partial least squares (PLS)**
 * **Generalized Additive Model (GAM)**
 * **Multivariate Adaptive Regression Splines (MARS)**
-* **Elastic net**
 * **Random Forest**
 * **Boosting**
 
@@ -179,6 +179,7 @@ sprintf("test error for lm is: %.3f", lm_test_rmse)
 ### K-Nearest Neighbors (KNN)
 
 ```{r}
+set.seed(8)
 # fit knn on train data use caret
 kGrid <- expand.grid(k = seq(1, to = 40, by = 1))
 knn_model <- train(train_x,
@@ -193,6 +194,28 @@ ggplot(knn_model, highlight = TRUE)
 knn_test_pred <- predict(knn_model, newdata = test_x) # test dataset
 knn_test_rmse <- sqrt(mean((knn_test_pred - test_y)^2))
 sprintf("test error for K-Nearest Neighbors is: %.3f", knn_test_rmse)
+```
+
+
+### Enet
+
+```{r}
+#tuning glmnet alpha 0 and 0.05 have large RMSE. So alpha start from 0.1
+set.seed(8)
+enet.fit.min <- train(train_x, train_y,
+                  method = "glmnet",
+                  tuneGrid = expand.grid(alpha = seq(0.1, 1, length = 21), 
+                                         lambda = exp(seq(-10, -5, length = 100))),
+                  trControl = ctrl)
+enet.fit.min$bestTune
+plot(enet.fit.min)
+
+
+# view performance on the test set (RMSE)
+enet_test_pred <- predict(enet.fit.min, newdata = test_x) # test dataset
+enet_test_rmse <- sqrt(mean((enet_test_pred - test_y)^2))
+sprintf("test error for enet is: %.3f",enet_test_rmse)
+
 ```
 
 
@@ -220,6 +243,7 @@ sprintf("test error for pls is: %.3f",pls_test_rmse)
 ### Generalised additive regression (GAM)
 
 ```{r}
+set.seed(8)
 # gam use caret
 # fit GAM model using all predictors
 gam_model <- train(train_x, train_y, # training dataset
@@ -290,27 +314,6 @@ mars_test_rmse <- sqrt(mean((mars_test_pred - test_y)^2))
 sprintf("test error for MARS is: %.3f", mars_test_rmse)
 ```
 
-
-### Enet
-
-```{r}
-#tuning glmnet alpha 0 and 0.05 have large RMSE. So alpha start from 0.1
-set.seed(8)
-enet.fit.min <- train(train_x, train_y,
-                  method = "glmnet",
-                  tuneGrid = expand.grid(alpha = seq(0.1, 1, length = 21), 
-                                         lambda = exp(seq(-10, -5, length = 100))),
-                  trControl = ctrl)
-enet.fit.min$bestTune
-plot(enet.fit.min)
-
-
-# view performance on the test set (RMSE)
-enet_test_pred <- predict(enet.fit.min, newdata = test_x) # test dataset
-enet_test_rmse <- sqrt(mean((enet_test_pred - test_y)^2))
-sprintf("test error for enet is: %.3f",enet_test_rmse)
-
-```
 
 ### Random Forest - Regression
 
@@ -452,12 +455,13 @@ sprintf("The test error for LDA is %.3f", test.error.lda)
 
 ### Random Forest - Classification
 ```{r}
-set.seed(8)
-cl <- makePSOCKcluster(no_cores)
-registerDoParallel(cl)
 rf.grid <- expand.grid(mtry = 1:18,
                        splitrule = "gini",
                        min.node.size = seq(from = 1, to = 50, by = 5))
+
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+set.seed(8)
 rf_class_model <- train(x_train_class,
                         y_train_class,
                         method = "ranger",
