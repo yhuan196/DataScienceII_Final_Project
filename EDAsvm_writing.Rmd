@@ -1,0 +1,178 @@
+---
+title: "EDA and SVM writing"
+author: "Shun Xie"
+date: "2023-05-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(gridExtra)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(caret)
+library(corrplot)
+
+```
+
+
+# Regression
+
+## EDA
+
+
+We consider the EDA for the training data, which we will use later on to train our models. Recovery data contains 6 continuous predictors, namely age, height, weight, bmi, Systolic blood pressure (SBP) and LDL cholesterol (LDL), as well as 8 discrete/factor predictors, namely gender, race, smoking, hypertension, diabetes, vaccine status, Severity of COVID-19 infection and study which the data belongs to. The response value is the time for recovery. It is a continuous variable.  \\
+
+Distribution of data is included in appendix 1. In accordance to distribution of continuous variables, only the recovery time, which is the response, has a right skewed shape. All predictors are normally distributed with symmetric density plot. \\
+
+The correlation plot (only considers continuous variable), calculated from Pearson Correlation in appendix 2, gives an insight of linear correlation between continuous predictors and transformed recovery time. It can be seen that bmi and weight have a relatively weak positive relation with log recovery time whereas height may have a weak negative linear correlation with log recovery time. While linear trend may be sufficient in some cases, some data may show a non-linear correlation with log recovery time. As shown in appendix 3, weight and bmi is likely to have a non-linear correlation with the response, suggesting a motivation to consider non-linear method.
+
+
+
+## SVM
+
+Support Vector Machine can be utilized in a classification problem. By constructing a boundary, it is able to classify into two categories based on predictors. During the training process, a soft margin SVM minimize $\frac{1}{2}||\beta^2+C\sum^n_{i=1}\xi_i$ where the optimal Cost parameter C can be chosen based on 10-fold CV. If inner product is used in predicting f(x), it is a Support vector classifier or linear SVM. It will become SVM with radial kernel if inner product is replaced by $exp(-\gamma\sum^p_{j=1}(x_{ij}-x_{i’j}^2)$. In this case, optimal pair of cost and $\gamma$ can be obtained by 10-fold CV. Both cases are considered in our study. 
+
+\newpage
+
+# Appendix
+
+## Appendix 1
+
+```{r,echo=FALSE}
+
+#load data
+load("data/recovery.RData")
+
+#get data from 2 team members uni
+set.seed(3554)
+dat1 <- dat[sample(1:10000, 2000),]
+set.seed(4437)
+dat2 <- dat[sample(1:10000, 2000),]
+
+#combine the data and discard duplicates
+dat_temp <- rbind(dat1, dat2)
+dat <- dat_temp[!duplicated(dat_temp$id),]
+
+#dat is now the final data and it has the length as following:
+length(dat$id)
+
+# data manipulation
+data = 
+  dat %>% 
+  mutate(study = factor(dat$study),
+         gender = factor(dat$gender),
+         hypertension = factor(dat$hypertension),
+         diabetes = factor(dat$diabetes),
+         vaccine = factor(dat$vaccine),
+         severity = factor(dat$severity)) %>% 
+  dplyr::select(-id)
+# save(data, file = "data/covid_recovery.RData")
+head(data)
+
+ 
+#Split data into 70-30, using the third member's uni
+set.seed(2337)
+indexTrain <- createDataPartition(y = data$recovery_time, p = 0.7, list = FALSE)
+
+# training data
+train_data <- data[indexTrain,]
+# matrix of predictors
+train_x <- model.matrix(recovery_time~.,train_data)[,-1]
+# vector of response
+train_y <- train_data$recovery_time
+
+# test data
+test_data <- data[-indexTrain,]
+# matrix of predictors
+test_x <- model.matrix(recovery_time~.,test_data)[,-1]
+# vector of response
+test_y <- test_data$recovery_time
+
+
+#continuous
+ggplot(train_data, aes(x = age))+geom_density()+labs(title="Distribution for age")
+ggplot(train_data, aes(x = height))+geom_density()+labs(title="Distribution for height")
+ggplot(train_data, aes(x = weight))+geom_density()+labs(title="Distribution for weight")
+ggplot(train_data, aes(x = bmi))+geom_density()+labs(title="Distribution for bmi")
+ggplot(train_data, aes(x = SBP))+geom_density()+labs(title="Distribution for SBP")
+ggplot(train_data, aes(x = LDL))+geom_density()+labs(title="Distribution for LDL")
+ggplot(train_data, aes(x = recovery_time))+geom_density()+labs(title="Distribution for recovery_time")
+
+
+#discrete
+ggplot(train_data) + geom_bar(aes(x=gender))+labs(title="Bar plot for different gender")
+ggplot(train_data) + geom_bar(aes(x=race))+labs(title="Bar plot for different race")
+ggplot(train_data) + geom_bar(aes(x=smoking))+labs(title="Bar plot for different smoking")
+ggplot(train_data) + geom_bar(aes(x=hypertension))+labs(title="Bar plot for different hypertension")
+ggplot(train_data) + geom_bar(aes(x=diabetes))+labs(title="Bar plot for different diabetes")
+ggplot(train_data) + geom_bar(aes(x=vaccine))+labs(title="Bar plot for different vaccine")
+ggplot(train_data) + geom_bar(aes(x=severity))+labs(title="Bar plot for different severity")
+ggplot(train_data) + geom_bar(aes(x=study))+labs(title="Bar plot for different study")
+
+```
+
+
+
+## Appendix 2
+
+```{r,echo=FALSE}
+num_df <- 
+  train_data %>% 
+  dplyr::select(age, height, weight, bmi, SBP, LDL, recovery_time) 
+
+
+# calulate the correlations
+res <- cor(num_df, use="complete.obs")
+
+corrplot(res, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+
+```
+
+
+## Appendix 3
+
+```{r,echo=FALSE}
+
+ggplot(train_data, aes(x = age, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against age")
+ggplot(train_data, aes(x = height, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against height")
+ggplot(train_data, aes(x = weight, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against weight")
+ggplot(train_data, aes(x = bmi, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against bmi")
+ggplot(train_data, aes(x = SBP, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against SBP")
+ggplot(train_data, aes(x = LDL, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against LDL")
+
+```
+
+
+
+## Appendix 4
+
+
+```{r,echo=FALSE}
+ggplot(data, aes(x = as.factor(gender), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different gender")
+
+ggplot(data, aes(x = as.factor(race), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different race")
+
+ggplot(data, aes(x = as.factor(smoking), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different smoking")
+
+ggplot(data, aes(x = as.factor(hypertension), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different hypertension")
+
+ggplot(data, aes(x = as.factor(diabetes), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different diabetes")
+
+ggplot(data, aes(x = as.factor(vaccine), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different vaccine")
+
+ggplot(data, aes(x = as.factor(severity), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different severity")
+
+ggplot(data, aes(x = as.factor(study), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different study")
+
+
+```
+
+
+
+
