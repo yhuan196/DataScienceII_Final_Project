@@ -1,0 +1,753 @@
+---
+title: "model_result"
+author: "Yi Huang"
+date: "2023-05-09"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.align = "center",
+                      fig.width = 8, 
+                      fig.height = 6,
+                      out.width = "90%")
+```
+
+\newpage
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(ISLR)
+library(caret)
+library(corrplot)
+library(glmnet)
+library(mgcv)
+library(nlme)
+library(earth)
+library(vip)
+library(ranger)
+library(doParallel) # parallel computing
+library(MASS) # lda
+```
+
+## Load data, data partition
+```{r}
+# load data
+load("data/covid_recovery.Rdata")
+
+#Split data into 70-300, using the third member's uni
+set.seed(2337)
+indexTrain <- createDataPartition(y = data$recovery_time, p = 0.7, list = FALSE)
+
+# training data
+train_data <- data[indexTrain,]
+# matrix of predictors
+train_x <- model.matrix(recovery_time~.,train_data)[,-1]
+# vector of response
+train_y <- train_data$recovery_time
+
+# test data
+test_data <- data[-indexTrain,]
+# matrix of predictors
+test_x <- model.matrix(recovery_time~.,test_data)[,-1]
+# vector of response
+test_y <- test_data$recovery_time
+
+# 10-fold cv
+ctrl <- trainControl(method = "cv",
+                     number = 10)
+```
+
+## Exploratory Data Analysis on train data
+
+Here is the exploratory analysis and data visualization from train data set. we have 15 variables in total, 8 factors and 7 numeri from 1600 participants. Base on the underlay true of some variables, I had convert character variable gender, race, smoking, hypertension, diabetes, vaccine, severity and study into factors to add them into our model and proceed with the analysis. Because id cannot be regarded as a predictor, I removed it for analysis. Then we have 14 predictors for consideration and recovery time is our outcome. Recovery time has a mean of 43.17 days, but some patients have very long recovery time.
+
+```{r}
+#continuous
+ggplot(train_data, aes(x = age))+geom_density()+labs(title="Distribution for age")
+ggplot(train_data, aes(x = height))+geom_density()+labs(title="Distribution for height")
+ggplot(train_data, aes(x = weight))+geom_density()+labs(title="Distribution for weight")
+ggplot(train_data, aes(x = bmi))+geom_density()+labs(title="Distribution for bmi")
+ggplot(train_data, aes(x = SBP))+geom_density()+labs(title="Distribution for SBP")
+ggplot(train_data, aes(x = LDL))+geom_density()+labs(title="Distribution for LDL")
+ggplot(train_data, aes(x = recovery_time))+geom_density()+labs(title="Distribution for recovery_time")
+
+
+#discrete
+ggplot(train_data) + geom_bar(aes(x=gender))+labs(title="Bar plot for different gender")
+ggplot(train_data) + geom_bar(aes(x=race))+labs(title="Bar plot for different race")
+ggplot(train_data) + geom_bar(aes(x=smoking))+labs(title="Bar plot for different smoking")
+ggplot(train_data) + geom_bar(aes(x=hypertension))+labs(title="Bar plot for different hypertension")
+ggplot(train_data) + geom_bar(aes(x=diabetes))+labs(title="Bar plot for different diabetes")
+ggplot(train_data) + geom_bar(aes(x=vaccine))+labs(title="Bar plot for different vaccine")
+ggplot(train_data) + geom_bar(aes(x=severity))+labs(title="Bar plot for different severity")
+ggplot(train_data) + geom_bar(aes(x=study))+labs(title="Bar plot for different study")
+
+
+num_df <- 
+  train_data %>% 
+  dplyr::select(age, height, weight, bmi, SBP, LDL, recovery_time) 
+
+
+# calulate the correlations
+res <- cor(num_df, use="complete.obs")
+
+corrplot(res, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+
+```
+
+```{r}
+
+ggplot(train_data, aes(x = age, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against age")
+ggplot(train_data, aes(x = height, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against height")
+ggplot(train_data, aes(x = weight, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against weight")
+ggplot(train_data, aes(x = bmi, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against bmi")
+ggplot(train_data, aes(x = SBP, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against SBP")
+ggplot(train_data, aes(x = LDL, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against LDL")
+
+```
+
+
+```{r}
+ggplot(data, aes(x = as.factor(gender), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different gender")
+
+ggplot(data, aes(x = as.factor(race), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different race")
+
+ggplot(data, aes(x = as.factor(smoking), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different smoking")
+
+ggplot(data, aes(x = as.factor(hypertension), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different hypertension")
+
+ggplot(data, aes(x = as.factor(diabetes), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different diabetes")
+
+ggplot(data, aes(x = as.factor(vaccine), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different vaccine")
+
+ggplot(data, aes(x = as.factor(severity), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different severity")
+
+ggplot(data, aes(x = as.factor(study), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different study")
+
+
+```
+
+
+## Regression
+## primary analysis (Regression)
+
+* **Linear regression**
+* **K-Nearest Neighbors (KNN)**
+* **Elastic net**
+* **Partial least squares (PLS)**
+* **Generalized Additive Model (GAM)**
+* **Multivariate Adaptive Regression Splines (MARS)**
+* **Boosting**
+* **Random forest**
+
+### Linear regression
+
+```{r}
+## fit linear model on train data
+set.seed(2337)
+linear_model <- train(train_x,
+                      train_y,
+                      method = "lm", 
+                      trControl = ctrl)
+summary(linear_model)
+
+# view performance on the test set (RMSE)
+lm_test_pred <- predict(linear_model, newdata = test_x) # test dataset
+lm_test_rmse <- sqrt(mean((lm_test_pred - test_y)^2))
+sprintf("test error for lm is: %.3f",lm_test_rmse)
+```
+
+
+### K-Nearest Neighbors (KNN)
+
+```{r}
+# fit knn on train data use caret
+kGrid <- expand.grid(k = seq(1, to = 40, by = 1))
+knn_model <- train(train_x,
+                   train_y,
+                   method = "knn",
+                   trControl = ctrl,
+                   tuneGrid = kGrid)
+ggplot(knn_model, highlight = TRUE)
+# knn with K = 18 was selected as the final model
+
+# view performance on the test set (RMSE)
+knn_test_pred <- predict(knn_model, newdata = test_x) # test dataset
+knn_test_rmse <- sqrt(mean((knn_test_pred - test_y)^2))
+sprintf("test error for K-Nearest Neighbors is: %.3f", knn_test_rmse)
+```
+
+
+### Enet
+
+```{r}
+#tuning glmnet alpha 0 and 0.05 have large RMSE. So alpha start from 0.1
+set.seed(2337)
+enet.fit.min <- train(train_x, train_y,
+                  method = "glmnet",
+                  tuneGrid = expand.grid(alpha = seq(0.1, 1, length = 21), 
+                                         lambda = exp(seq(-10, -5, length = 100))),
+                  trControl = ctrl)
+enet.fit.min$bestTune
+plot(enet.fit.min)
+
+
+# view performance on the test set (RMSE)
+enet_test_pred <- predict(enet.fit.min, newdata = test_x) # test dataset
+enet_test_rmse <- sqrt(mean((enet_test_pred - test_y)^2))
+sprintf("test error for enet is: %.3f",enet_test_rmse)
+
+```
+
+
+### PLS
+```{r}
+set.seed(2337)
+pls_model <- train(train_x,
+                   train_y,
+                   method = "pls",
+                   tuneGrid = data.frame(ncomp = 1:16),
+                   trControl = ctrl,
+                   preProcess = c("center", "scale"))
+ggplot(pls_model, highlight = TRUE)
+ggsave(file = "image/pls_number_of_component.png", width = 10, height = 7)
+
+# view performance on the test set (RMSE)
+pls_test_pred <- predict(pls_model, newdata = test_x) # test dataset
+pls_test_rmse <- sqrt(mean((pls_test_pred - test_y)^2))
+sprintf("test error for pls is: %.3f",pls_test_rmse)
+
+```
+
+
+### Generalised additive regression (GAM)
+
+```{r}
+# gam use caret
+# fit GAM model using all predictors
+# parallel computing
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+gam_model <- train(train_x, train_y, # training dataset
+                   method = "gam",
+                   trControl = ctrl,
+                   control = gam.control(maxit = 200)) 
+stopCluster(cl)
+registerDoSEQ()
+
+gam_model$bestTune
+gam_model$finalModel
+plot(gam_model)
+summary(gam_model$finalModel)
+
+# view performance on the test set (RMSE)
+gam_test_pred <- predict(gam_model, newdata = test_x) # test dataset
+gam_test_rmse <- sqrt(mean((gam_test_pred - test_y)^2))
+sprintf("test error for Generalised additive regression is: %.3f", knn_test_rmse)
+```
+
+
+### Multivariate adaptive regression 
+
+```{r}
+set.seed(2337)
+
+# create dummy variables for categorical variables
+df_dummies <- data.frame(model.matrix(~ . - 1, 
+                                      # exclude ID and continuous variables
+                                      data = data[, c("gender", "race", "smoking", "hypertension", "diabetes",
+                                                     "vaccine", "severity", "study")]), 
+                         # add continuous variables back to the data frame
+                         age = data$age,
+                         height = data$height,
+                         weight = data$weight,
+                         bmi = data$bmi,
+                         SBP = data$SBP,
+                         LDL = data$LDL,
+                         recovery_time = data$recovery_time) 
+
+# rename df_dummies dataset as dat
+dat_mars <- df_dummies
+
+# training data
+dat_train_mars <- dat_mars[indexTrain, ]
+x_mars <- model.matrix(recovery_time~.,dat_mars)[indexTrain,-1]
+y_mars <- dat_mars$recovery_time[indexTrain]
+
+# test data
+dat_test_mars <- dat_mars[-indexTrain, ]
+x2_mars <- model.matrix(recovery_time~.,dat_mars)[-indexTrain,-1]
+y2_mars <- dat_mars$recovery_time[-indexTrain]
+
+
+# create grid of all possible pairs that can take degree and nprune values
+mars_grid <- expand.grid(degree = 1:3, # number of possible product hinge functions in 1 term
+                         nprune = 2:20) # upper bound of number of terms in model
+# parallel computing
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+
+mars_model <- train(x_mars, y_mars, # training dataset
+                  method = "earth",
+                  tuneGrid = mars_grid,
+                  trControl = ctrl)
+
+stopCluster(cl)
+registerDoSEQ()
+
+ggplot(mars_model)
+print(plot(mars_model))
+summary(mars_model$finalModel)
+
+# view performance on the test set (RMSE)
+mars_test_pred <- predict(mars_model, newdata = x2_mars) # test dataset
+mars_test_rmse <- sqrt(mean((mars_test_pred - test_y)^2))
+sprintf("test error for MARS is: %.3f", mars_test_rmse)
+```
+
+
+### Random Forest - Regression
+
+```{r}
+set.seed(2337)
+rf.grid <- expand.grid(mtry = 1:14,
+                       splitrule = "variance",
+                       min.node.size = seq(from = 1, to = 50, by = 5))
+
+# parallel computing
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+
+set.seed(2337)
+rf_model <- train(recovery_time ~ . , 
+                  train_data, 
+                  method = "ranger",
+                  tuneGrid = rf.grid,
+                  trControl = ctrl)
+
+stopCluster(cl)
+registerDoSEQ()
+ggplot(rf_model, highlight = TRUE)
+rf_model$bestTune
+
+# variable importance
+rf.final.per <- ranger(recovery_time ~ . , 
+                       train_data,
+                       mtry = rf_model$bestTune[[1]], 
+                       splitrule = "variance",
+                       min.node.size = rf_model$bestTune[[3]],
+                       importance = "permutation",
+                       scale.permutation.importance = TRUE) 
+
+barplot(sort(ranger::importance(rf.final.per), decreasing = FALSE), 
+        las = 2, horiz = TRUE, cex.names = 0.7,
+        col = colorRampPalette(colors = c("cyan","blue"))(19))
+
+# view performance on the test set (RMSE)
+rf_test_pred <- predict(rf_model, newdata = test_data) # test dataset
+rf_test_rmse <- sqrt(mean((rf_test_pred - test_y)^2))
+sprintf("test error for Random Forest is: %.3f", rf_test_rmse)
+```
+
+### Boosting
+
+```{r}
+gbm.grid <- expand.grid(n.trees = c(500,1000,2000,3000,4000,5000),
+                        interaction.depth = 1:5,
+                        shrinkage = c(0.005,0.01),
+                        n.minobsinnode = c(1))
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+set.seed(2337)
+gbm.fit = train(recovery_time~. ,
+                  train_data,
+                  tuneGrid = gbm.grid,
+                  trControl = ctrl,
+                  method = "gbm",
+                  verbose = FALSE)
+stopCluster(cl)
+registerDoSEQ()
+
+ggplot(gbm.fit, highlight = TRUE)
+
+gbm.fit$bestTune
+
+# test error
+gbm.fit.predict = predict(gbm.fit, newdata = test_data)
+RMSE(gbm.fit.predict, test_y)
+```
+
+
+## resampling on train
+```{r}
+set.seed(2337)
+resamp <- resamples(list(lm = linear_model,
+                         knn = knn_model,
+                         enet = enet.fit.min,
+                         pls = pls_model,
+                         gam = gam_model,
+                         mars = mars_model,
+                         rf = rf_model,
+                         boosting = gbm.fit))
+summary(resamp)
+parallelplot(resamp, metric = "RMSE")
+bwplot(resamp, metric = "RMSE")
+```
+
+
+
+## Classification
+
+### Data Manipulation
+
+We consider time to recovery as a binary outcome as long(>30 days) and short (<= 30 days).
+
+```{r}
+#consider time to recovery as a binary outcome (>30 days vs. <= 30 days) and develop a prediction model for this binary outcome.
+train_class = 
+  train_data %>% 
+  mutate(recovery_time = ifelse(recovery_time>30, "long", "short")) 
+test_class = 
+  test_data %>% 
+  mutate(recovery_time = ifelse(recovery_time>30, "long", "short")) 
+
+# matrix of predictors
+x_train_class <- model.matrix(recovery_time~.,train_class)[,-1]
+# vector of response
+y_train_class <- train_class$recovery_time
+
+
+# matrix of predictors
+x_test_class <- model.matrix(recovery_time~.,test_class)[,-1]
+# vector of response
+y_test_class <- test_class$recovery_time
+
+
+# ctrl for class
+ctrl_class <- trainControl(method = "cv",
+                     summaryFunction = twoClassSummary,
+                     classProbs = TRUE)
+```
+
+#### Modeling Strategy
+
+
+* **Penalized logistic regression** 
+* **Generalized additive model (GAM)** 
+* **Multivariate adaptive regression splines (MARS)** 
+* **Linear discriminant analysis (LDA)**
+* **Classification and Regression Tree (CART)**
+* **Random Forest**
+* **Boosting**
+* **Support Vector Machine (SVM with Linear and Radial Kernels)**
+
+
+
+
+### Penalized logistic regression
+
+```{r}
+glmnGrid <- expand.grid(.alpha = seq(0, 1, length = 21),
+                        .lambda = exp(seq(-12, -7, length = 50)))
+set.seed(2337)
+model.glmn <- train(x = x_train_class,
+                    y = y_train_class,
+                    method = "glmnet",
+                    tuneGrid = glmnGrid,
+                    metric = "ROC",
+                    trControl = ctrl_class)
+
+model.glmn$bestTune
+
+myCol<- rainbow(25)
+myPar <- list(superpose.symbol = list(col = myCol),
+              superpose.line = list(col = myCol))
+
+plot(model.glmn, par.settings = myPar, xTrans = function(x) log(x))
+
+
+# view performance on the test set (accuracy)
+glmn_class_test_pred <- predict(model.glmn, newdata=x_test_class) # test dataset
+glmn_class_test_acc <- sum(glmn_class_test_pred==y_test_class)/length(y_test_class)
+sprintf("test error for penalized logistic is: %.3f",1-glmn_class_test_acc)
+
+
+```
+
+Since the boundary value for $\lambda$ is exp(-10)=4.54e-5 and exp(-5)=0.007, and the optimal lambda is not on the boundary. So local minimum is achieved.
+
+
+### Gam
+
+```{r}
+# gam
+set.seed(2337)
+model.gam <- train(x = x_train_class,
+                   y = y_train_class,
+                   method = "gam",
+                   tuneGrid = data.frame(method = "GCV.Cp", select = c(TRUE,FALSE)),
+                   metric = "ROC",
+                   trControl = ctrl_class)
+
+model.gam$bestTune
+model.gam$finalModel
+
+#discover bmi and recovery time
+plot(model.gam$finalModel, select = 4)
+
+#train error
+train.pred.gam <- predict(model.gam, newdata = x_train_class)
+train.error.gam = 1-sum(train_class$recovery_time == train.pred.gam)/length(train_data$recovery_time)
+sprintf("The train error for GAM is %.3f", train.error.gam)
+
+#test error
+test.pred.gam <- predict(model.gam, newdata = x_test_class)
+test.error.gam = 1-sum(test_class$recovery_time == test.pred.gam)/length(test_class$recovery_time)
+sprintf("The test error for GAM is %.3f", test.error.gam)
+```
+
+
+### MARS
+
+```{r}
+set.seed(2337)
+mars.fit = train(x = x_train_class,
+                        y =  y_train_class,
+                         method = "earth",
+                         tuneGrid = expand.grid(degree = 1:3, 
+                                                nprune = 2:20),
+                         metric = "ROC",
+                         trControl = ctrl_class)
+plot(mars.fit)
+
+#train error
+train.pred.mars = predict(mars.fit , newdata = x_train_class)
+train.error.mars = 1-sum(train_class$recovery_time == train.pred.mars)/length(train_data$recovery_time)
+sprintf("The train error for MARS is %.3f", train.error.mars)
+
+#test error
+test.pred.mars = predict(mars.fit , newdata = x_test_class)
+test.error.mars = 1-sum(test_class$recovery_time == test.pred.mars)/length(test_class$recovery_time)
+sprintf("The test error for MARS is %.3f", test.error.mars)
+```
+
+
+### Linear discriminant analysis (LDA)
+
+```{r}
+set.seed(2337)
+# Using MASS
+lda.fit <- lda(recovery_time~., 
+               data = train_class)
+plot(lda.fit)
+lda.fit$scaling
+
+set.seed(2337)
+# Using caret
+lda_model <- train(x_train_class, #train x
+                   y_train_class, #train y 
+                   method = "lda", 
+                   metric = "ROC", 
+                   trControl = ctrl_class)
+summary(lda_model)
+
+#train error
+train.pred.lda <- predict(lda_model, newdata = x_train_class)
+train.error.lda = 1 - sum(train_class$recovery_time == train.pred.lda)/length(train_data$recovery_time)
+sprintf("The train error for LDA is %.3f", train.error.lda)
+
+#test error
+test.pred.lda <- predict(lda_model, newdata = x_test_class)
+test.error.lda = 1 - sum(test_class$recovery_time == test.pred.lda)/length(test_class$recovery_time)
+sprintf("The test error for LDA is %.3f", test.error.lda)
+```
+
+
+### Random Forest - Classification
+
+```{r}
+set.seed(2337)
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+rf.grid <- expand.grid(mtry = 1:18,
+                       splitrule = "gini",
+                       min.node.size = seq(from = 1, to = 50, by = 5))
+
+set.seed(2337)
+rf_class_model <- train(x_train_class,
+                        y_train_class,
+                        method = "ranger",
+                        importance = "permutation",
+                        tuneGrid = rf.grid,
+                        metric = "ROC",
+                        trControl = ctrl_class)
+stopCluster(cl)
+registerDoSEQ()
+
+ggplot(rf_class_model, highlight = TRUE)
+rf_class_model$bestTune
+
+
+#train error
+train.pred.rf <- predict(lda_model, newdata = x_train_class)
+train.error.ef = 1 - sum(train_class$recovery_time == train.pred.lda)/length(train_data$recovery_time)
+sprintf("The train error for LDA is %.3f", train.error.lda)
+
+#test error
+test.pred.rf <- predict(rf_class_model, newdata = x_test_class)
+test.error.rf = 1 - sum(test_class$recovery_time == test.pred.rf)/length(test_class$recovery_time)
+sprintf("The test error for Random Forest is %.3f", test.error.rf)
+```
+
+
+### Boosting
+
+```{r}
+
+gbmA.grid = expand.grid(n.trees = c(10000,20000,30000,40000),
+                         interaction.depth = 1:3,
+                         shrinkage = c(0.0003,0.0005,0.001),
+                         n.minobsinnode = 1)
+
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+set.seed(2337)
+gbmA.fit = train(recovery_time~. ,
+                  train_class,
+                  tuneGrid = gbmA.grid,
+                  trControl = ctrl_class,
+                  method = "gbm",
+                  distribution = "adaboost",
+                  metric = "ROC",
+                  verbose = FALSE)
+
+stopCluster(cl)
+registerDoSEQ()
+
+ggplot(gbmA.fit, highlight = TRUE)
+
+#train error
+train.pred.boosting = predict(gbmA.fit , newdata = train_class, type = "raw")
+train.error.boosting = 1-sum(train_class$recovery_time == train.pred.boosting)/length(train_data$recovery_time)
+sprintf("The train error for boosting is %.3f", train.pred.boosting)
+
+#test error
+test.pred.boosting = predict(gbmA.fit , newdata = test_class, type = "raw")
+test.error.boosting = 1-sum(test_class$recovery_time == test.pred.boosting)/length(test_class$recovery_time)
+sprintf("The train error for boosting is %.3f", train.pred.boosting)
+```
+
+
+### linear SVM
+
+```{r,warning=FALSE}
+# parallel computing
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+
+# kernlab
+set.seed(2337)
+svml.fit <- train(recovery_time ~ . , 
+                  data = train_class, 
+                  method = "svmLinear",
+                  tuneGrid = data.frame(C = exp(seq(-5,3,len=30))),
+                  trControl = ctrl_class)
+
+plot(svml.fit, highlight = TRUE, xTrans = log)
+
+stopCluster(cl)
+registerDoSEQ()
+
+svml.fit$bestTune
+
+#train error
+train.pred.svml <- predict(svml.fit, newdata = train_class)
+train.error.svml = 1-sum(train_class$recovery_time == train.pred.svml)/length(train_data$recovery_time)
+sprintf("The train error for Support vector classifier is %.3f", train.error.svml)
+
+#test error
+test.pred.svml <- predict(svml.fit, newdata = test_class)
+test.error.svml = 1-sum(test_class$recovery_time == test.pred.svml)/length(test_class$recovery_time)
+sprintf("The test error for Support vector classifier is %.3f", test.error.svml)
+```
+
+
+### SVM with radial kernel
+
+```{r}
+svmr.grid <- expand.grid(C = exp(seq(-1,5,len=20)),
+                         sigma = exp(seq(-10,-2,len=10)))
+
+# parallel computing
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+
+# tunes over both cost and sigma
+set.seed(2337)             
+svmr.fit <- train(recovery_time ~ . , 
+                  data = train_class,
+                  method = "svmRadialSigma",
+                  tuneGrid = svmr.grid,
+                  trControl = ctrl_class)
+
+stopCluster(cl)
+registerDoSEQ()
+
+
+
+myCol<- rainbow(25)
+myPar <- list(superpose.symbol = list(col = myCol),
+              superpose.line = list(col = myCol))
+
+plot(svmr.fit, highlight = TRUE, par.settings = myPar)
+
+svmr.fit$bestTune
+
+
+#train error
+train.pred.svmr <- predict(svmr.fit, newdata = train_class)
+train.error.svmr = 1-sum(train_class$recovery_time == train.pred.svmr)/length(train_class$recovery_time)
+sprintf("The train error for Support vector Machine with radial kernel is %.3f", train.error.svmr)
+
+#test error
+test.pred.svmr <- predict(svmr.fit, newdata = test_class)
+test.error.svmr = 1-sum(test_class$recovery_time == test.pred.svmr)/length(test_class$recovery_time)
+sprintf("The test error for Support vector Machine with radial kernel is %.3f", test.error.svmr)
+```
+
+After tuning, the cost in this range achieves local maximum accuracy. The value is not on the boundary, hence the local maximum accuracy is achieved. It takes a long time (aprox 30 min) to run so it may be hard to refine into a smaller grid.
+
+
+## Resampling Results and Model Selection
+
+```{r}
+# parallel computing
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+
+set.seed(2337)
+resamp_class <- resamples(list(enet_logistic = model.glmn,
+                         gam = model.gam,
+                         mars = mars.fit,
+                         lda = lda_model,
+                         rf = rf_class_model,
+                         boosting = gbmA.fit,
+                         linear_svm = svml.fit,
+                         radial_svm = svmr.fit))
+stopCluster(cl)
+registerDoSEQ()
+
+summary(resamp_class)
+parallelplot(resamp_class, metric = "ROC")
+bwplot(resamp_class, metric = "ROC")
+```
