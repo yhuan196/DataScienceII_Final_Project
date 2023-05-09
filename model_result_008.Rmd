@@ -1,6 +1,6 @@
 ---
 title: "model_result_008"
-author: "Yi Huang"
+author: "Yi Huang, Yuchen Zhang, Shun Xie"
 date: "2023-05-09"
 output: github_document
 ---
@@ -689,4 +689,59 @@ registerDoSEQ()
 summary(resamp_class)
 parallelplot(resamp_class, metric = "ROC")
 bwplot(resamp_class, metric = "ROC")
+```
+
+## Final model for classification
+#### GAM
+
+```{r,warning =FALSE}
+#feature selection or not
+plot(model.gam)
+
+#Formula and get the importance of each variable
+summary(model.gam)
+
+#degrees of freedom
+model.gam$finalModel
+
+
+
+
+#discover age and recovery time, df = 0.0002
+plot(model.gam$finalModel, select = 1)
+#discover sbp and recovery time
+plot(model.gam$finalModel, select = 2)
+#discover ldl and recovery time
+plot(model.gam$finalModel, select = 3)
+#discover bmi and recovery time
+plot(model.gam$finalModel, select = 4)
+#discover height and recovery time
+plot(model.gam$finalModel, select = 5)
+#discover weight and recovery time, df = 0.0001
+plot(model.gam$finalModel, select = 6)
+
+
+#can also visualize the pairwise relation:
+vis.gam(model.gam$finalModel, view=c("SBP","age"), color = "topo", theta = -55)
+vis.gam(model.gam$finalModel, view=c("LDL","age"), color = "topo",  theta = 35)
+vis.gam(model.gam$finalModel, view=c("bmi","age"), color = "topo",  theta = 15)
+vis.gam(model.gam$finalModel, view=c("height","age"), color = "topo",  theta = 25)
+vis.gam(model.gam$finalModel, view=c("weight","age"), color = "topo",  theta = 15)
+
+vis.gam(model.gam$finalModel, view=c("LDL","SBP"), color = "topo",  theta = 35)
+vis.gam(model.gam$finalModel, view=c("bmi","SBP"), color = "topo",  theta = 15)
+vis.gam(model.gam$finalModel, view=c("height","SBP"), color = "topo",  theta = 15)
+vis.gam(model.gam$finalModel, view=c("weight","SBP"), color = "topo",  theta = 25)
+
+vis.gam(model.gam$finalModel, view=c("bmi","LDL"), color = "topo",  theta = 15)
+vis.gam(model.gam$finalModel, view=c("height","LDL"), color = "topo",  theta = 15)
+vis.gam(model.gam$finalModel, view=c("weight","LDL"), color = "topo",  theta = 15)
+
+vis.gam(model.gam$finalModel, view=c("height","bmi"), color = "topo",  theta = 35)
+vis.gam(model.gam$finalModel, view=c("weight","bmi"), color = "topo",  theta = 35)
+
+vis.gam(model.gam$finalModel, view=c("height","weight"), color = "topo",  theta = 15)
+
+
+
 ```
