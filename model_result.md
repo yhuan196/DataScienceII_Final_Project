@@ -409,6 +409,7 @@ sprintf("test error for pls is: %.3f",pls_test_rmse)
 no_cores <- detectCores() - 1
 cl <- makePSOCKcluster(no_cores)
 registerDoParallel(cl)
+set.seed(2337)
 gam_model <- train(train_x, train_y, # training dataset
                    method = "gam",
                    trControl = ctrl,
@@ -539,7 +540,6 @@ y2_mars <- dat_mars$recovery_time[-indexTrain]
 mars_grid <- expand.grid(degree = 1:3, # number of possible product hinge functions in 1 term
                          nprune = 2:20) # upper bound of number of terms in model
 # parallel computing
-no_cores <- detectCores() - 1
 cl <- makePSOCKcluster(no_cores)
 registerDoParallel(cl)
 
@@ -700,7 +700,12 @@ RMSE(gbm.fit.predict, test_y)
 ## resampling on train
 
 ``` r
+# parallel computing
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
 set.seed(2337)
+
 resamp <- resamples(list(lm = linear_model,
                          knn = knn_model,
                          enet = enet.fit.min,
@@ -709,6 +714,10 @@ resamp <- resamples(list(lm = linear_model,
                          mars = mars_model,
                          rf = rf_model,
                          boosting = gbm.fit))
+
+stopCluster(cl)
+registerDoSEQ()
+
 summary(resamp)
 ```
 
@@ -725,7 +734,7 @@ summary(resamp)
     ## knn      15.37075 16.08924 16.27729 16.43150 16.73887 18.30159    0
     ## enet     13.75661 14.78158 15.51474 15.72501 16.89604 18.07575    0
     ## pls      13.91136 14.83702 15.70282 15.86059 17.10895 17.98698    0
-    ## gam      13.91937 14.22080 14.77448 14.71540 15.11166 15.73245    0
+    ## gam      13.42614 13.91185 14.34855 14.72459 15.65081 16.41236    0
     ## mars     13.16081 13.78606 14.37446 14.40883 14.90154 16.14824    0
     ## rf       12.88480 13.25494 14.28194 14.35238 15.10200 16.81740    0
     ## boosting 12.87423 13.14708 13.93877 13.95774 14.40141 15.67332    0
@@ -736,7 +745,7 @@ summary(resamp)
     ## knn      21.33260 22.70396 24.32635 24.80976 26.40794 30.60127    0
     ## enet     18.66444 20.35663 21.70232 23.45010 25.32954 36.20936    0
     ## pls      18.77159 20.33757 21.86645 23.47877 25.53555 35.65638    0
-    ## gam      18.50087 20.64363 21.41164 21.59688 23.04463 24.37753    0
+    ## gam      17.99281 19.12483 20.75755 21.90642 23.66017 30.06655    0
     ## mars     17.90391 19.23699 20.37222 20.57945 21.21665 25.56186    0
     ## rf       17.19551 18.55079 20.27562 20.91333 22.18751 29.98525    0
     ## boosting 17.59902 18.52951 19.77556 20.48785 21.51046 27.10191    0
@@ -747,7 +756,7 @@ summary(resamp)
     ## knn      0.004646629 0.0681859 0.1452300 0.1781345 0.1917208 0.4966265    0
     ## enet     0.166425299 0.1896596 0.2246024 0.2562765 0.2874691 0.4928261    0
     ## pls      0.165927044 0.1863135 0.2240227 0.2580736 0.2908591 0.5118804    0
-    ## gam      0.158119658 0.2623102 0.3796382 0.3702098 0.4633351 0.5898515    0
+    ## gam      0.224604940 0.3040520 0.3331324 0.3742297 0.4087661 0.7091967    0
     ## mars     0.170545013 0.3371873 0.3535206 0.3990474 0.4869190 0.7315694    0
     ## rf       0.186380668 0.3111663 0.3864993 0.3927711 0.4373603 0.6420149    0
     ## boosting 0.240938777 0.3452425 0.3903808 0.4173522 0.4527714 0.7393036    0
