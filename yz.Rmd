@@ -174,7 +174,7 @@ ctrl_class <- trainControl(method = "repeatedcv",
 
 ```{r}
 
-gbmA.grid = expand.grid(n.trees = c(10000,12500,15000,17500,20000),
+gbmA.grid = expand.grid(n.trees = c(10000,15000,20000),
                          interaction.depth = 1:3,
                          shrinkage = c(0.0005,0.001,0.002),
                          n.minobsinnode = 1)
@@ -200,16 +200,16 @@ ggplot(gbmA.fit, highlight = TRUE)
 
 
 ```{r}
-#train error
-train.pred.boosting = predict(gbmA.fit , newdata = train_class, type = "prob")[,2]
-mars.roc = roc(y_train_class, train.pred.mars)
 
-sprintf("The train error for MARS is %.3f", mars.roc$auc[1])
+#train error
+train.pred.boosting = predict(gbmA.fit , newdata = train_class)
+train.error.boosting = 1 - sum(train_class$recovery_time == train.pred.boosting)/length(train_class$recovery_time)
+sprintf("The train error for boosting is %.3f", train.error.boosting)
 
 #test error
-test.pred.boosting = predict(gbmA.fit , newdata = test_class, type = "prob")[,2]
-mars.roc = roc(y_test_class, test.pred.mars)
-sprintf("The test error for MARS is %.3f", mars.roc$auc[1])
+test.pred.mars = predict(gbmA.fit, newdata = x_test_class)
+test.error.mars = 1 - sum(test_class$recovery_time == test.pred.boosting)/length(test_class$recovery_time)
+sprintf("The test error for boosting is %.3f", test.error.mars)
 ```
 
 
@@ -217,6 +217,9 @@ sprintf("The test error for MARS is %.3f", mars.roc$auc[1])
 
 # mars
 ```{r}
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
 set.seed(8)
 mars.fit = train(x = train_class,
                         y =  y_train_class,
@@ -229,16 +232,18 @@ mars.fit = train(x = train_class,
 
 
 ```{r}
-#train error
-train.pred.mars = predict(mars.fit , newdata = train_class, type = "prob")[,2]
-mars.roc = roc(y_train_class, train.pred.mars)
 
-sprintf("The train error for MARS is %.3f", mars.roc$auc[1])
+#train error
+train.pred.mars = predict(mars.fit , newdata = train_class)
+train.error.mars = 1 - sum(train_class$recovery_time == train.pred.mars)/length(train_class$recovery_time)
+sprintf("The train error for MARS is %.3f", train.error.mars)
 
 #test error
-test.pred.mars = predict(mars.fit , newdata = test_class, type = "prob")[,2]
-mars.roc = roc(y_test_class, test.pred.mars)
-sprintf("The test error for MARS is %.3f", mars.roc$auc[1])
+test.pred.mars = predict(mars.fit, newdata = test_class)
+test.error.mars = 1 - sum(test_class$recovery_time == test.pred.mars)/length(test_class$recovery_time)
+sprintf("The test error for MARS is %.3f", test.error.mars)
+```
+
 ```
 
 
