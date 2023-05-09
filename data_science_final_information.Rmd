@@ -336,6 +336,40 @@ sprintf("test error for pls is: %.3f",pls_test_rmse)
 
 ```
 
+#### Boosting
+
+```{r}
+
+gbm.grid <- expand.grid(n.trees = c(500,1000,2000,3000,4000,5000),
+                        interaction.depth = 1:5,
+                        shrinkage = c(0.005,0.01),
+                        n.minobsinnode = c(1))
+
+no_cores <- detectCores() - 1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl)
+
+set.seed(8)
+gbm.fit = train(recovery_time~. ,
+                  train_data,
+                  tuneGrid = gbm.grid,
+                  trControl = ctrl,
+                  method = "gbm",
+                  verbose = FALSE)
+
+stopCluster(cl)
+registerDoSEQ()
+
+
+ggplot(gbm.fit, highlight = TRUE)
+
+
+gbm.fit$bestTune
+
+
+gbm.fit.predict = predict(gbm.fit, newdata = test_data)
+RMSE(gbm.fit.predict, test_y)
+```
 
 
 

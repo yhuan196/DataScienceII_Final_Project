@@ -471,3 +471,27 @@ sprintf("The test error for Support vector Machine with radial kernel is %.3f", 
 ```
 
 After tuning, the cost in this range achieves local maximum accuracy. The value is not on the boundary, hence the local maximum accuracy is achieved. It takes a long time (aprox 30 min) to run so it may be hard to refine into a smaller grid.
+
+
+
+
+### Final Model
+
+
+#### GAM
+
+```{r}
+#Formula 
+summary(model.gam)
+
+#degrees of freedom
+model.gam$finalModel
+
+#can also visualize the pairwise relation:
+vis.gam(model.gam$finalModel, view=c("age","pregnant"), color = "topo")
+vis.gam(model.gam$finalModel, view=c("age","triceps"), color = "topo")
+vis.gam(model.gam$finalModel, view=c("age","glucose"), color = "topo")
+vis.gam(model.gam$finalModel, view=c("age","pedigree"), color = "topo")
+
+```
+
