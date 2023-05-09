@@ -118,6 +118,7 @@ library(nlme)
 library(earth)
 library(vip)
 library(gridExtra)
+library(doParallel) # parallel computing
 ```
 
 ## Introduction & data manipulation
