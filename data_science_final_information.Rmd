@@ -119,6 +119,8 @@ library(earth)
 library(vip)
 library(gridExtra)
 library(doParallel) # parallel computing
+library(MASS) # lda
+
 ```
 
 ## Introduction & data manipulation
@@ -567,9 +569,9 @@ sprintf("The test error for Random Forest is %.3f", test.error.rf)
 
 ```{r}
 
-gbmA.grid = expand.grid(n.trees = c(3000,4000,5000),
+gbmA.grid = expand.grid(n.trees = c(10000,20000,30000,40000),
                          interaction.depth = 1:3,
-                         shrinkage = c(0.0005,0.001,0.002),
+                         shrinkage = c(0.0003,0.0005,0.001),
                          n.minobsinnode = 1)
 
 cl <- makePSOCKcluster(no_cores)
@@ -688,7 +690,7 @@ sprintf("The test error for Support vector Machine with radial kernel is %.3f", 
 After tuning, the cost in this range achieves local maximum accuracy. The value is not on the boundary, hence the local maximum accuracy is achieved. It takes a long time (aprox 30 min) to run so it may be hard to refine into a smaller grid.
 
 
-## resampling on train in classification
+#### Resampling Results and Model Selection
 
 ```{r}
 # parallel computing
@@ -716,10 +718,6 @@ bwplot(resamp_class, metric = "ROC")
 
 
 
-#### Optimal Tuning Parameters
-
-#### Resampling Results and Model Selection
-
 ## Results
 
 ### primary analysis
@@ -734,6 +732,9 @@ bwplot(resamp_class, metric = "ROC")
 ### secondary analysis
 
 #### Interpretion   
+
+GAM Model is the optimal model
+
 
 #### Variable Importance
 
