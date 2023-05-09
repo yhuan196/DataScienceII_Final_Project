@@ -141,9 +141,14 @@ length(dat$id)
 
 ```
 
+### Introduction
+
+The data is loaded in .RData table format. 70% partition was used here for splitting original data set to train and test data set. Models were built base on train data set and test data set for calculate test error.
+
+
+### data manipulation
 
 ```{r}
-# data manipulation
 data = 
   dat %>% 
   mutate(study = factor(dat$study),
@@ -179,6 +184,8 @@ test_y <- test_data$recovery_time
 
 
 ## Exploratory Data Analysis on train data
+
+Here is the exploratory analysis and data visualization from train data set. we have 15 variables in total, 8 factors and 7 numeri from 1600 participants. Base on the underlay true of some variables, I had convert character variable gender, race, smoking, hypertension, diabetes, vaccine, severity and study into factors to add them into our model and proceed with the analysis. Because id cannot be regarded as a predictor, I removed it for analysis. Then we have 14 predictors for consideration and recovery time is our outcome. Recovery time has a mean of 43.17 days, but some patients have very long recovery time.
 
 ```{r}
 #continuous
@@ -251,6 +258,7 @@ ggplot(data, aes(x = as.factor(study), y = recovery_time))+geom_boxplot()+labs(t
 
 ## Model training
 
+10-fold cross-validation methods is used here for finding predictors having the largest correlation with the outcome and fit models using these predictors. We assuming that the variables are independent and normally distributed when training all models.
 
 # Resampling method
 ```{r}
@@ -351,6 +359,7 @@ sprintf("test error for pls is: %.3f",pls_test_rmse)
 
 #### Data Manipulation
 
+We consider time to recovery as a binary outcome as long(>30 days) and short (<= 30 days).
 
 ```{r}
 #consider time to recovery as a binary outcome (>30 days vs. <= 30 days) and develop a prediction model for this binary outcome.
