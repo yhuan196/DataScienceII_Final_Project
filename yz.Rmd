@@ -22,14 +22,10 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.align = "center",
                       fig.width = 8, 
                       fig.height = 6,
-                      out.width = "90%"
+                      out.width = "90%",
                       fig.path = "images/"
 )
 ```
-```
-
-
-
 
 ```{r, message=FALSE, warning=FALSE}
 library(caret)
@@ -44,6 +40,7 @@ library(nlme)
 library(earth)
 library(vip)
 library(pROC)
+library(pdp)
 library(gridExtra)
 library(doParallel) # parallel computing
 ```
