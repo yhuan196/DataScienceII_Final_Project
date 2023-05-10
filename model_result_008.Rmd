@@ -385,10 +385,34 @@ ggplot(gbm.fit, highlight = TRUE)
 
 gbm.fit$bestTune
 
+# train error
+
+gbm.fit.predict = predict(gbm.fit, newdata = train_data)
+RMSE(gbm.fit.predict, train_y)
+
 # test error
 gbm.fit.predict = predict(gbm.fit, newdata = test_data)
 RMSE(gbm.fit.predict, test_y)
+
 ```
+
+```{r}
+#vip
+summary(gbm.fit$finalModel, las = 2, cBars = 16, cex.names = 0.6)
+```
+
+
+```{r}
+#pdp
+features = c("bmi", "study", "height", "LDL", "weight", "vaccine")
+
+pdps <- lapply(features, function(x) {
+  partial(gbm.fit, pred.var = x, which.class = 2,
+          prob = TRUE, plot = TRUE, plot.engine = "ggplot2")
+})
+grid.arrange(grobs = pdps,  ncol = 3)
+```
+
 
 
 ## resampling on train
