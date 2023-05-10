@@ -45,7 +45,7 @@ To gain a better understanding of the factors that predict recovery time from CO
 
 ## 1.2 Data Description
 
-The dataset is a random sample of 3593 participants draw from `"recovery.RData` includes 16 variables and 3593 observations. 
+The dataset merge two random samples of 2000 participants draw from `"recovery.RData` includes 16 variables and 3593 unique observations. 
 
 Description of each variable:
 
@@ -107,7 +107,7 @@ The correlation plot (only considers continuous variable), calculated from Pears
 
 This section describes the models used for predicting time to recovery from COVID-19. State the assumptions made by using the models and detailed description of the model training procedure and how to obtained the final model.
 \
-This project performs varies regression models on the dataset, including linear regression, K-Nearest Neighbors (KNN), elastic net, partial least squares (pls), generalized additive model (gam), Multivariate Adaptive Regression (mars), random forest, and boosting using 10-fold cross-validation results on train data. The model with the minimum mean of train RMSE from cross-validation results will be the optimal model. All models are implemented in `train()` function from `caret` package. To improve computation efficiency, parallel computing function from `doParallel` package is utilized.\
+This project performs varies regression models on the dataset, including linear regression, K-Nearest Neighbors (KNN), elastic net, partial least squares (pls), generalized additive model (gam), Multivariate Adaptive Regression (mars), random forest, and boosting using 10-fold cross-validation on train data. The model with the minimum mean of train RMSE from cross-validation results will be the optimal model. All models are implemented in `train()` function from `caret` package. To improve computation efficiency, parallel computing function from `doParallel` package is utilized.\
 \
 **1. Linear Model**: 
 
@@ -115,7 +115,7 @@ Linear model assumes a linear relationship between the predictor and response va
 \
 **2. KNN (K-Nearest Neighbors)**:
 
-KNN is a non-parametric machine learning algorithm that can be used for classification or regression tasks. The algorithm works by finding the K closest data points to a new input, and using their output values to predict the output value for the new input. It assume data points which exist in close proximity to each other are highly similar, while if a data point is far away from another group it's dissimilar to those data points. With `train()` function to specify the KNN model and use `expand.grid()` with sequence from 1 to 40 by 1.\
+KNN is a non-parametric machine learning algorithm that can be used for regression or classification tasks. The algorithm works by finding the K closest data points to a new input, and using their output values to predict the output value for the new input. It assume data points which exist in close proximity to each other are highly similar, while if a data point is far away from another group it's dissimilar to those data points. With `train()` function to specify the KNN model and use `expand.grid()` with sequence from 1 to 40 by 1.\
 \
 **3. Elastic Net Regression**:
 
@@ -135,8 +135,7 @@ MARS can model non-linear relationships between the input and output variables. 
 \
 **7. Random Forest, and Boosting Regression**:
 
-Random Forest used for regression and classification tasks. The algorithm works by training an ensemble of decision trees on different subsets of the training data and then combining their predictions. Boosting can be used to improve the accuracy of a model by combining weak learners into a strong learner. The method works by training a sequence of models on the training data, with each model focusing on the instances that were misclassified by the previous model. Use` randomForest()` function to fit Bagging and random forest models, and `train()` function for the boosting regression with `expand.grid()` function for generating a grid of tuning parameters. \
-\
+Random Forest used for regression and classification tasks. The algorithm works by training an ensemble of decision trees on different subsets of the training data and then combining their predictions. Boosting can be used to improve the accuracy of a model by combining weak learners into a strong learner. The method works by training a sequence of models on the training data, with each model focusing on the instances that were misclassified by the previous model. Use` randomForest()` function to fit Bagging and random forest models, and `train()` function for the boosting regression with `expand.grid()` function for generating a grid of tuning parameters. 
 
 
 
@@ -160,20 +159,21 @@ We also plot variable importance and partial dependence plots for interpretation
 knitr::include_graphics("image/boosting_pdp.png")
 ```
 
-## Interpretions of some significant coefficients on final model
+## Interpretions of some significant coefficients on final regression model
 
 Hold other condition same, people have higher value of bmi, people who are in Study B and people have higher height are expected to have more recovery time.
 
 ## Training and testing performance
 
-The mean RMSE of train error is 17.48103 and the mean RMSE of test error is 21.36644, which indicates that the model has good performance on training and test.
+The mean RMSE of train error is 17.4810 and the mean RMSE of test error is 21.3664, which indicates that the model has good performance on training and test.
+
+
 
 # 5 Model training for classification
 
-In classification, we split the recovery time into long(>30) and short ($\leq 30$). We consider penalized logistic, GAM, MARS, LDA, RF, boosting as well as SVM. Most of models are similar to regression, except for that they are now predicting probabilities. With a set cut-off point, usually the probability of having long recovery time is greater than 0.5, we can obtained each individuals class based on their predicted probability. The parameter for training is exactly the same for GAM, MARS, RF and boosting, and penalized logistic is essentially the same as elastic net but with a logistic link. We now consider LDA and SVM in this section. 
+In classification, we split the recovery time into long(>30) and short ($\leq 30$). We consider penalized logistic, GAM, MARS, LDA, RF, boosting as well as SVM, using 10-fold cross-validation on train data. Most of models are similar to regression, except for that they are now predicting probabilities. With a set cut-off point, usually the probability of having long recovery time is greater than 0.5, we can obtained each individuals class based on their predicted probability. The parameter for training is exactly the same for GAM, MARS, RF and boosting, and penalized logistic is essentially the same as elastic net but with a logistic link. The model with the maximum ROC from cross-validation results will be the optimal model. All models are implemented in `train()` function from `caret` package. To improve computation efficiency, parallel computing function from `doParallel` package is utilized. We now consider LDA and SVM in this section. 
 
-
-**1.  (LDA)**:
+**1. Linear discriminant analysis (LDA)**:
 
 Linear Discriminant Analysis, is a statistical method used for classification problems. The algorithm aims to find a linear combination of features that maximally separates different classes, with the usage of baye's theorem. LDA assumes that the covariance matrix in each class are the same. Additionally, LDA will pre-specify the distribution of likelihood $f_k(x)$. Normal distribution are likely to be selected but other distribution can also be used as the likelihood function. In R implementation, A method = "lda" argument was used within the `train()` function to specify a LDA model fit with metric ="ROC". The `lda()` function from `MASS` package is used for plotting linear discriminates. There is no tuning parameters needed for LDA model. 
 
@@ -183,8 +183,9 @@ Support Vector Machine can be utilized in a classification problem. By construct
 
 
 
-
 # 6 Results for classification
+
+## 10-fold Cross-validation on training set
 
 After resampling, 8 models share a common set of resampled datasets. The gam model has largest mean value of ROC. The ROC of all 8 model are showed below in appendix 4.
 
@@ -211,21 +212,20 @@ knitr::include_graphics("image/GAM_bmi_height.png")
 ```
 
 
-## Interpretions of some significant coefficients:
+## Interpretions of some significant coefficients on final classification model
 Hold other condition same, people have higher value of bmi, people who are in Study B and people have higher height are expected to have more recovery time.
 
-## Train/Test performance
+## Training and Testing performance
 
 We measure performance with error rate. The train error for GAM is calculated by mean of wrong prediction bt train dataset which is 0.266, the test error for GAM is calculated by mean of wrong prediction by test dataset which is 0.283,which indicates that the model has good performance on training and test.
 
 
-\newpage 
 
 # 7 Conclusions and discussion
 
-By a random sample of 4000 participants from the dataset in ”recovery.RData”, two prediction model for length of recovery time and probability of long recovery time is trained by compare four candidate models. 
+By a random sample of 3593 participants from the dataset in ”recovery.RData”, two prediction model for length of recovery time and probability of long recovery time is trained by compare four candidate models. 
 
-For the primary analysis on time to recovery, a prediction model for recovery time and identify important risk factors for length of recovery time is trained by compare eight candidate models. We selected boosting model as ithas lowest mean of RMSE in cross-validation. The BMI and heigh of patient, and the study they enroll in are most significantly associated with length of recovery time.
+For the primary analysis on time to recovery, a prediction model for recovery time and identify important risk factors for length of recovery time is trained by compare eight candidate models. We selected boosting model as it has lowest mean of RMSE in cross-validation. The BMI and heigh of patient, and the study they enroll in are most significantly associated with length of recovery time.
 
 For secondary analysis, A prediction model for probability of long recovery time (>30 days) was developed and selected by highest training cross-validation accuracy. A generalized additive model (GAM model) has highest receiver operating characteristic (ROC) median and mean in our calculations which means it has best performance of a classification. Even though we tried a more complex and flexible model, the model with smooth terms and piecewise function seems have better performance than Support Vector Machine model, black-box ensemble methods and other complex model. Relationships discovered on data exploration may not be the same as those in the model. Smoking status, vaccinated status, whether infected severely and BMI are significantly associated with probability of long recovery time of patient on this data. 
 
@@ -239,8 +239,6 @@ CDC Covid Data Tracker. (2021), Centers for Disease Control and Prevention.\
 \
 James, Gareth, e. a. (2021), An Introduction to Statistical Learning: With Applications in R., Springer.\
 \
-Pradhan, A. and Olsson., P.-E. (2021), ‘Sex differences in severity and mortality from covid- 19: are males more vulnerable?’, Biology of sex differences 11(1), 53.\
-\
 
 \newpage
 
@@ -248,9 +246,8 @@ Pradhan, A. and Olsson., P.-E. (2021), ‘Sex differences in severity and mortal
 
 ## Appendix 1
 
-\newpage
 
-```{r,echo=FALSE}
+```{r, echo=FALSE, out.width = '80%'}
 
 library(caret)
 library(corrplot)
@@ -332,10 +329,10 @@ grid.arrange(gender_bar, race_bar, smoking_bar, hypertension_bar, ncol=2)
 grid.arrange(diabetes_bar, vaccine_bar, severity_bar,study_bar, ncol=2)
 ```
 
-
+\newpage
 ## Appendix 2
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, out.width = '80%'}
 num_df <- 
   train_data %>% 
   dplyr::select(age, height, weight, bmi, SBP, LDL, recovery_time) 
@@ -348,13 +345,12 @@ corrplot(res, type = "upper", order = "hclust",
          tl.col = "black", tl.srt = 45)
 ```
 
-\newpage
 
+\newpage
 ## Appendix 3
 
-\newpage
 
-```{r,echo = FALSE}
+```{r,echo = FALSE, out.width = '80%'}
 
 recovery_age = ggplot(train_data, aes(x = age, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against age")
 recovery_height = ggplot(train_data, aes(x = height, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against height")
@@ -368,12 +364,11 @@ grid.arrange(recovery_sbp, recovery_ldl,nrow = 2, ncol=2)
 ```
 
 
-## Appendix4
-
 \newpage
+## Appendix 4
 
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, out.width = '80%'}
 gender_box = ggplot(data, aes(x = as.factor(gender), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different gender")
 
 race_box = ggplot(data, aes(x = as.factor(race), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different race")
