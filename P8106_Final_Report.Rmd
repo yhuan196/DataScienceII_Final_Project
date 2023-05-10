@@ -135,23 +135,26 @@ Random Forest used for regression and classification tasks. The algorithm works 
 
 # 4 Results for regression
 
-After resampling, 8 models share a common set of resampled datasets. The boosting model has least  mean value of RMSE. The RMSE of all four model are showed below.
+After resampling, 8 models share a common set of resampled datasets from train set. By 10-folds cross-validation, the boosting model has least mean value of RMSE. The RMSE of all eight model are showed below.
 ```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
 knitr::include_graphics("model_result_008_files/figure-gfm/unnamed-chunk-11-2.png")
 ```
+Therefore, We choose Boosting model with 15 trees, 2000 interaction.depth, 3 shrinkage and 0.005 n.minobsinnode as our final model as it has the strongest predictive ability for regression.
+
 variable importance and partial dependence plots for interpretation. 
 ```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
 knitr::include_graphics("image/boosting_vip.png")
 ```
 Variable importance plot indicates that the bmi, study and height are most influential in the model among all the predictors. 
 
-Interpretions of some significant coefficients: Hold other condition same, people have higher value of bmi, people who are in Study B and people have higher height are expected to have more recovery time.
-
-
 ```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
 knitr::include_graphics("image/boosting_pdp.png")
 ```
+Interpretions of some significant coefficients: Hold other condition same, people have higher value of bmi, people who are in Study B and people have higher height are expected to have more recovery time.
 
+## Train/Test performance
+
+The RMSE of train error is 17.48103 and the RMSE of test error is 21.36644, which indicates that the model has good performance on training and test.
 
 # 5 Model training for classification
 
@@ -162,7 +165,11 @@ This section describes the models used for predicting time to recovery from COVI
 
 # 6 Results for classification
 
-In this section, report the final model that you built for predicting time to recovery from COVID-19. Interpret the results. Assess the model's training/test performance.
+After resampling, 8 models share a common set of resampled datasets. The gam model has largest mean value of ROC. The ROC of all 8 model are showed below.
+```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+knitr::include_graphics("model_result_008_files/figure-gfm/unnamed-chunk-21-2.png")
+```
+Therefore, We choose GAM model as our final model as it has the strongest predictive ability for classification.
 
 
 # 7 Conclusions and discussion
