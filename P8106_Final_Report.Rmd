@@ -150,7 +150,8 @@ Variable importance plot indicates that the bmi, study and height are most influ
 ```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
 knitr::include_graphics("image/boosting_pdp.png")
 ```
-Interpretions of some significant coefficients: Hold other condition same, people have higher value of bmi, people who are in Study B and people have higher height are expected to have more recovery time.
+## Interpretions of some significant coefficients:
+Hold other condition same, people have higher value of bmi, people who are in Study B and people have higher height are expected to have more recovery time.
 
 ## Train/Test performance
 
@@ -170,11 +171,21 @@ After resampling, 8 models share a common set of resampled datasets. The gam mod
 knitr::include_graphics("model_result_008_files/figure-gfm/unnamed-chunk-21-2.png")
 ```
 Therefore, We choose GAM model as our final model as it has the strongest predictive ability for classification.
+Formula of final GAM model:
 
+$$log( \frac{p(RecoverytimeLong)}{1-p(RecoverytimeLong)}) = -2.07377 +0.47457\times gender1+0.04810\times race2-0.06047\times race3+0.07020\times race4-0.33680\times smoking1-0.50352 \times smoking2-0.34676\times hypertension1 -0.07480\times diabetes1+0.69695\times vaccine1 -0.61790\times severity1 + 1.18222\times study2+0.01115 \times study3 + s(age) + s(sbp) + s(ldl) + s(bmi) + s(height) + s(weight)$$
+Age, Systolic blood pressure (SBP), LDL cholesterol (LDL), BMI (bmi),height and weight are smooth- ing term in this model which have a smooth function for those variables. Their plots are in figure4. For race variable, the race1(White) was set as reference. For smoking variable, smoking0(never smoked) was set as reference. For study variable, study1(studyA) was set as the reference. Some variables have significance level over 0.05: gender, smoking1, smoking2, vaccine, hypertension, diabetes, severity, studyB, BMI and height.Those variables have greater impact on the outcome than others.
+
+## Interpretions of some significant coefficients:
+Hold other condition same, people have higher value of bmi, people who are in Study B and people have higher height are expected to have more recovery time.
+
+## Train/Test performance
+
+We measure performance with error rate. The train error for GAM is 0.266, the test error for GAM is 0.283,which indicates that the model has good performance on training and test.
 
 # 7 Conclusions and discussion
 
-
+By a random sample of 4000 participants from the dataset in ”recovery.RData”, a prediction model for recovery time and identify important risk factors for long recovery time is trained by compare four candidate models. There are some findings from the model analysis and discuss the insights gained into predicting time to recovery from COVID-19. Model with smooth terms and pieceswise function seems have better performance than sample linear model on this data. Relationships discovered on data exploration may not be the same as those in the model. Smoking status, vaccinated status, whether infected severely and BMI are significantly associated with recovery time of Patient on this data. The impact of race on recovery time still cannot be ignored.
 
 
 # References
