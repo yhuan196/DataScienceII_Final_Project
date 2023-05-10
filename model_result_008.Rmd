@@ -60,6 +60,79 @@ ctrl <- trainControl(method = "cv",
 ```
 
 
+
+
+## EDA on training data
+
+```{r}
+#continuous
+ggplot(train_data, aes(x = age))+geom_density()+labs(title="Distribution for age")
+ggplot(train_data, aes(x = height))+geom_density()+labs(title="Distribution for height")
+ggplot(train_data, aes(x = weight))+geom_density()+labs(title="Distribution for weight")
+ggplot(train_data, aes(x = bmi))+geom_density()+labs(title="Distribution for bmi")
+ggplot(train_data, aes(x = SBP))+geom_density()+labs(title="Distribution for SBP")
+ggplot(train_data, aes(x = LDL))+geom_density()+labs(title="Distribution for LDL")
+ggplot(train_data, aes(x = recovery_time))+geom_density()+labs(title="Distribution for recovery_time")
+
+
+#discrete
+ggplot(train_data) + geom_bar(aes(x=gender))+labs(title="Bar plot for different gender")
+ggplot(train_data) + geom_bar(aes(x=race))+labs(title="Bar plot for different race")
+ggplot(train_data) + geom_bar(aes(x=smoking))+labs(title="Bar plot for different smoking")
+ggplot(train_data) + geom_bar(aes(x=hypertension))+labs(title="Bar plot for different hypertension")
+ggplot(train_data) + geom_bar(aes(x=diabetes))+labs(title="Bar plot for different diabetes")
+ggplot(train_data) + geom_bar(aes(x=vaccine))+labs(title="Bar plot for different vaccine")
+ggplot(train_data) + geom_bar(aes(x=severity))+labs(title="Bar plot for different severity")
+ggplot(train_data) + geom_bar(aes(x=study))+labs(title="Bar plot for different study")
+
+
+num_df <- 
+  train_data %>% 
+  dplyr::select(age, height, weight, bmi, SBP, LDL, recovery_time) 
+
+
+# calulate the correlations
+res <- cor(num_df, use="complete.obs")
+
+corrplot(res, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+
+```
+
+
+```{r}
+
+ggplot(train_data, aes(x = age, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against age")
+ggplot(train_data, aes(x = height, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against height")
+ggplot(train_data, aes(x = weight, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against weight")
+ggplot(train_data, aes(x = bmi, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against bmi")
+ggplot(train_data, aes(x = SBP, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against SBP")
+ggplot(train_data, aes(x = LDL, y = recovery_time))+geom_point()+geom_smooth(method = 'gam', se = TRUE, color = 'red')+labs(title="Recovery time against LDL")
+
+```
+
+
+```{r}
+ggplot(data, aes(x = as.factor(gender), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different gender")
+
+ggplot(data, aes(x = as.factor(race), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different race")
+
+ggplot(data, aes(x = as.factor(smoking), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different smoking")
+
+ggplot(data, aes(x = as.factor(hypertension), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different hypertension")
+
+ggplot(data, aes(x = as.factor(diabetes), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different diabetes")
+
+ggplot(data, aes(x = as.factor(vaccine), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different vaccine")
+
+ggplot(data, aes(x = as.factor(severity), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different severity")
+
+ggplot(data, aes(x = as.factor(study), y = recovery_time))+geom_boxplot()+labs(title="Box plot for Recovery time with different study")
+
+
+```
+
+
 ## Regression
 ## primary analysis (Regression)
 
