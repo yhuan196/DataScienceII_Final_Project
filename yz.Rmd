@@ -134,13 +134,17 @@ stopCluster(cl)
 registerDoSEQ()
 
 
-ggplot(gbm.fit, highlight = TRUE)
-
 ```
 
 
 ```{r}
+ggplot(gbm.fit$bestTune, highlight = TRUE)
 gbm.fit$bestTune
+```
+train error
+```{r}
+gbm.fit.predict = predict(gbm.fit, newdata = train_data)
+RMSE(gbm.fit.predict, train_y)
 ```
 
 
