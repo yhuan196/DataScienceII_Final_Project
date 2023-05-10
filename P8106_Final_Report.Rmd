@@ -184,9 +184,10 @@ Formula of final GAM model:
 
 \begin{align*}
 log( \frac{p(RecoverytimeLong)}{1-p(RecoverytimeLong)}) =& -2.07377 +0.47457\times gender1+0.04810\times race2-0.06047\times race3+\\
-&0.07020\times race4-0.33680\times smoking1-0.50352 \times smoking2-0.34676\times hypertension1 -\\
-& 0.07480\times diabetes1+0.69695\times vaccine1 -0.61790\times severity1 + 1.18222\times study2+ \\
-&0.01115 \times study3 + s(age) + s(sbp) + s(ldl) + s(bmi) + s(height) + s(weight)
+&0.07020\times race4-0.33680\times smoking1-0.50352 \times smoking2-0.34676\times \\
+&hypertension1 - 0.07480\times diabetes1+0.69695\times vaccine1 -0.61790\times \\
+&severity1 + 1.18222\times study2+ 0.01115 \times study3 + s(age) + s(sbp) + \\
+&s(ldl) + s(bmi) + s(height) + s(weight)
 \end{align*}
 
 Age, Systolic blood pressure (SBP), LDL cholesterol (LDL), BMI (bmi),height and weight are smoothing term in this model which have a smooth function for those variables. Their plots are in figure4. For race variable, the race1(White) was set as reference. For smoking variable, smoking0(never smoked) was set as reference. For study variable, study1(studyA) was set as the reference. Some variables have significance level over 0.05: gender, smoking1, smoking2, vaccine, hypertension, diabetes, severity, studyB, BMI and height.Those variables have greater impact on the outcome than others.
