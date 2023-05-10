@@ -29,6 +29,8 @@ library(vip)
 library(ranger)
 library(doParallel) # parallel computing
 library(MASS) # lda
+library(pdp)
+library(lime)
 ```
 
 ## Create and Save data 
@@ -495,6 +497,14 @@ pdps <- lapply(features, function(x) {
           prob = TRUE, plot = TRUE, plot.engine = "ggplot2")
 })
 grid.arrange(grobs = pdps,  ncol = 3)
+```
+
+```{r}
+#lime
+explain_boosting <- lime(train_class, gbm.fit)
+new_obs <- explain(test_class[1:10,], explain_boosting, n_features=10)
+
+plot_features(new_obs)
 ```
 
 
