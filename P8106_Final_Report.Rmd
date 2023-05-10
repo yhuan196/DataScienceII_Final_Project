@@ -3,7 +3,7 @@ title: |
   | \vspace{4cm} \LARGE Predicting Recovery Time of Patients with Covid-19
 subtitle: "Data Science II Final Project"
 author: "Yi Huang, Yuchen Zhang, Shun Xie"
-date: "May 8, 2023"
+date: "May 10, 2023"
 output:
   pdf_document:
     latex_engine: xelatex
@@ -131,7 +131,7 @@ GAM is a type of regression model that can capture non-linear relationships betw
 \
 **6. Multivariate Adaptive Regression Splines (MARS)**:
 
-MARS can model non-linear relationships between the input and output variables. The method works by fitting piecewise linear or nonlinear functions to the data. It has the same assumptions as the linear model. A method = “earth” argument was used within the `train()` function to specify a MARS model fit. Additionally, the `expand.grid()` function is used to generate a grid of tuning parameters. The mars_grid object includes two arguments: degree is set to 1, 2, and 3, representing the number of possible product hinge functions in a single term, and nprune is set to integers between 2 and 20, representing the upper bound on the number of terms in the model. The tuneGrid argument in the `train()` function uses the mars_grid object to specify the parameters for model tuning.\
+MARS can model non-linear relationships between the input and output variables. The method works by fitting piecewise linear or nonlinear functions to the data. It has the same assumptions as the linear model. A method = “earth” argument was used within the `train()` function to specify a MARS model fit. Additionally, the `expand.grid()` function is used to generate a grid of tuning parameters. The mars_grid object includes two arguments: degree is set to 1, 2, and 3, representing the number of possible product hinge functions in a single term, and nprune is set to integers between 2 and 18, representing the upper bound on the number of terms in the model. The tuneGrid argument in the `train()` function uses the mars_grid object to specify the parameters for model tuning.\
 \
 **7. Random Forest, and Boosting Regression**:
 
@@ -142,28 +142,31 @@ Random Forest used for regression and classification tasks. The algorithm works 
 
 # 4 Results for regression
 
-After resampling, 8 models share a common set of resampled datasets from train set. By 10-folds cross-validation, the boosting model has least mean value of RMSE. The RMSE of all eight model are showed below.
+## 10-fold Cross-validation on training set
+
+After resampling, 8 models share a common set of resampled datasets from train set. By 10-fold cross-validation, the boosting model has least mean value of RMSE. The RMSE of all eight model are showed below.
 ```{r, echo=FALSE, fig.cap="RMSE for all methods", out.width = '80%'}
 knitr::include_graphics("model_result_008_files/figure-gfm/unnamed-chunk-11-2.png")
 ```
-Therefore, We choose Boosting model with 15 trees, 2000 interaction.depth, 3 shrinkage and 0.005 n.minobsinnode as our final model as it has the strongest predictive ability for regression.
+Therefore, we choose Boosting model with 15 trees, 2000 interaction.depth, 3 shrinkage and 0.005 n.minobsinnode as our final model as it has the strongest predictive ability for regression.
 
 
 ```{r, echo=FALSE, fig.cap="Variable Importance Plot", out.width = '80%'}
 knitr::include_graphics("image/boosting_vip.png")
 ```
-We also plot variable importance and partial dependence plots for interpretation. Variable importance plot indicates that the bmi, study and height are most influential in the model among all the predictors. On the other hand, partial dependence plots shows the the effect of each predictors on the response variable across all observations. It can be seen that they all have distinct features.
+We also plot variable importance and partial dependence plots for interpretation. Variable importance plot indicates that the bmi, study, height, LDL, and weight are most influential in the model among all the predictors. On the other hand, partial dependence plots shows the the effect of each predictors on the response variable across all observations. It can be seen that they all have distinct features.
 
 ```{r, echo=FALSE, fig.cap="Partial Dependence Plot", out.width = '80%'}
 knitr::include_graphics("image/boosting_pdp.png")
 ```
 
-## Interpretions of some significant coefficients:
+## Interpretions of some significant coefficients on final model
+
 Hold other condition same, people have higher value of bmi, people who are in Study B and people have higher height are expected to have more recovery time.
 
-## Train/Test performance
+## Training and testing performance
 
-The RMSE of train error is 17.48103 and the RMSE of test error is 21.36644, which indicates that the model has good performance on training and test.
+The mean RMSE of train error is 17.48103 and the mean RMSE of test error is 21.36644, which indicates that the model has good performance on training and test.
 
 # 5 Model training for classification
 
