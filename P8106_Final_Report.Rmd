@@ -113,11 +113,11 @@ This section describes the models used for predicting time to recovery from COVI
 # 4 Results for regression
 
 After resampling, 8 models share a common set of resampled datasets. The boosting model has least  mean value of RMSE. The RMSE of all four model are showed below.
-```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
 knitr::include_graphics("model_result_008_files/figure-gfm/unnamed-chunk-11-2.png")
 ```
 variable importance and partial dependence plots for interpretation. 
-```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
 knitr::include_graphics("image/boosting_vip.png")
 ```
 Variable importance plot indicates that the bmi, study and height are most influential in the model among all the predictors. 
@@ -125,7 +125,7 @@ Variable importance plot indicates that the bmi, study and height are most influ
 Interpretions of some significant coefficients: Hold other condition same, people have higher value of bmi, people who are in Study B and people have higher height are expected to have more recovery time.
 
 
-```{r pressure, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
 knitr::include_graphics("image/boosting_pdp.png")
 ```
 
