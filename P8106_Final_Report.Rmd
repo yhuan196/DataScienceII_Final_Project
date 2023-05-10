@@ -136,18 +136,18 @@ Random Forest used for regression and classification tasks. The algorithm works 
 # 4 Results for regression
 
 After resampling, 8 models share a common set of resampled datasets from train set. By 10-folds cross-validation, the boosting model has least mean value of RMSE. The RMSE of all eight model are showed below.
-```{r, echo=FALSE, fig.cap="RMSE for all methods", out.width = '100%'}
+```{r, echo=FALSE, fig.cap="RMSE for all methods", out.width = '80%'}
 knitr::include_graphics("model_result_008_files/figure-gfm/unnamed-chunk-11-2.png")
 ```
 Therefore, We choose Boosting model with 15 trees, 2000 interaction.depth, 3 shrinkage and 0.005 n.minobsinnode as our final model as it has the strongest predictive ability for regression.
 
 
-```{r, echo=FALSE, fig.cap="Variable Importance Plot", out.width = '100%'}
+```{r, echo=FALSE, fig.cap="Variable Importance Plot", out.width = '80%'}
 knitr::include_graphics("image/boosting_vip.png")
 ```
 We also plot variable importance and partial dependence plots for interpretation. Variable importance plot indicates that the bmi, study and height are most influential in the model among all the predictors. On the other hand, partial dependence plots shows the the effect of each predictors on the response variable across all observations. It can be seen that they all have distinct features.
 
-```{r, echo=FALSE, fig.cap="Partial Dependence Plot", out.width = '100%'}
+```{r, echo=FALSE, fig.cap="Partial Dependence Plot", out.width = '80%'}
 knitr::include_graphics("image/boosting_pdp.png")
 ```
 
@@ -164,7 +164,7 @@ In classification, we split the recovery time into long(>30) and short ($\leq 30
 
 
 **1.  (LDA)**:
-
+Linear Discriminant Analysis, is a statistical method used for classification problems. The algorithm aims to find a linear combination of features that maximally separates different classes. A method = "lda" argument was used within the `train()` function to specify a LDA model fit with metric ="ROC". The `lda()` function from `MASS` package is used for plotting linear discriminates.
 
 **2. Support Vector Machine (SVM)**:
 
@@ -176,15 +176,15 @@ Support Vector Machine can be utilized in a classification problem. By construct
 # 6 Results for classification
 
 After resampling, 8 models share a common set of resampled datasets. The gam model has largest mean value of ROC. The ROC of all 8 model are showed below.
-```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+```{r, echo=FALSE, fig.cap="ROC for all classification models", out.width = '80%'}
 knitr::include_graphics("model_result_008_files/figure-gfm/unnamed-chunk-21-2.png")
 ```
 Therefore, We choose GAM model as our final model as it has the strongest predictive ability for classification.
 Formula of final GAM model:
 
 \begin{align*}
-log( \frac{p(RecoverytimeLong)}{1-p(RecoverytimeLong)}) =& -2.07377 +0.47457\times gender1+0.04810\times race2-0.06047\times race3+0.07020\times race4- \\
-&0.33680\times smoking1-0.50352 \times smoking2-0.34676\times hypertension1 -\\
+log( \frac{p(RecoverytimeLong)}{1-p(RecoverytimeLong)}) =& -2.07377 +0.47457\times gender1+0.04810\times race2-0.06047\times race3+\\
+&0.07020\times race4-0.33680\times smoking1-0.50352 \times smoking2-0.34676\times hypertension1 -\\
 & 0.07480\times diabetes1+0.69695\times vaccine1 -0.61790\times severity1 + 1.18222\times study2+ \\
 &0.01115 \times study3 + s(age) + s(sbp) + s(ldl) + s(bmi) + s(height) + s(weight)
 \end{align*}
@@ -380,11 +380,3 @@ grid.arrange(diabete_box, vaccine_box,severity_box, study_box, ncol=2)
 
 
 
-# A Appendix: Figure
-
-![example](image/pls_number_of_component.png){width=80%}
-
-
-
-
-# B Appendix: Code
