@@ -191,6 +191,12 @@ log( \frac{p(RecoverytimeLong)}{1-p(RecoverytimeLong)}) =& -2.07377 +0.47457\tim
 
 Age, Systolic blood pressure (SBP), LDL cholesterol (LDL), BMI (bmi),height and weight are smoothing term in this model which have a smooth function for those variables. Their plots are in figure4. For race variable, the race1(White) was set as reference. For smoking variable, smoking0(never smoked) was set as reference. For study variable, study1(studyA) was set as the reference. Some variables have significance level over 0.05: gender, smoking1, smoking2, vaccine, hypertension, diabetes, severity, studyB, BMI and height.Those variables have greater impact on the outcome than others.
 
+Heres is the partial dependence plots of BMI and height which are most significant variables for model.
+```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+knitr::include_graphics("image/GAM_bmi_height.png")
+```
+
+
 ## Interpretions of some significant coefficients:
 Hold other condition same, people have higher value of bmi, people who are in Study B and people have higher height are expected to have more recovery time.
 
