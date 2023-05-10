@@ -502,7 +502,7 @@ grid.arrange(grobs = pdps,  ncol = 3)
 ```{r}
 #lime
 explain_boosting <- lime(train_class, gbm.fit)
-new_obs <- explain(test_class[1:10,], explain_boosting, n_features=10)
+new_obs <- explain(train_class[1:10,], explain_boosting, n_features=10)
 
 plot_features(new_obs)
 ```
