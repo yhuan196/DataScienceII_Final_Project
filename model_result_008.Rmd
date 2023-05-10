@@ -2,7 +2,7 @@
 title: "model_result_008"
 author: "Yi Huang, Yuchen Zhang, Shun Xie"
 date: "2023-05-09"
-output: github_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -290,7 +290,7 @@ y2_mars <- dat_mars$recovery_time[-indexTrain]
 
 # create grid of all possible pairs that can take degree and nprune values
 mars_grid <- expand.grid(degree = 1:3, # number of possible product hinge functions in 1 term
-                         nprune = 2:20) # upper bound of number of terms in model
+                         nprune = 2:18) # upper bound of number of terms in model
 # parallel computing
 cl <- makePSOCKcluster(no_cores)
 registerDoParallel(cl)
@@ -534,7 +534,7 @@ mars.fit = train(x = x_train_class,
                         y =  y_train_class,
                          method = "earth",
                          tuneGrid = expand.grid(degree = 1:3, 
-                                                nprune = 2:20),
+                                                nprune = 2:18),
                          metric = "ROC",
                          trControl = ctrl_class)
 plot(mars.fit)
