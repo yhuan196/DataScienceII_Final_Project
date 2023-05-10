@@ -2,10 +2,13 @@
 \providecommand\hyper@newdestlabel[2]{}
 \providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
 \HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
 \global\let\oldnewlabel\newlabel
 \gdef\newlabel#1#2{\newlabelxx{#1}#2}
 \gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
 \AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
 \let\newlabel\oldnewlabel
 \fi}
 \fi}
@@ -13,11 +16,6 @@
 \gdef\HyperFirstAtBeginDocument#1{#1}
 \providecommand*\HyPL@Entry[1]{}
 \HyPL@Entry{0<</S/D>>}
-\gdef \LT@i {\LT@entry 
-    {1}{102.94228pt}\LT@entry 
-    {1}{124.25766pt}\LT@entry 
-    {1}{124.25766pt}\LT@entry 
-    {1}{118.25766pt}}
 \@writefile{toc}{\contentsline {section}{1 Introduction}{2}{section*.1}\protected@file@percent }
 \newlabel{introduction}{{}{2}{1 Introduction}{section*.1}{}}
 \@writefile{toc}{\contentsline {subsection}{1.1 Background}{2}{section*.2}\protected@file@percent }
@@ -27,6 +25,11 @@
 \@writefile{toc}{\contentsline {subsection}{1.3 Data Cleaning}{2}{section*.4}\protected@file@percent }
 \newlabel{data-cleaning}{{}{2}{1.3 Data Cleaning}{section*.4}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces \textbf  {Summary of Dataset by Study Group}\relax }}{2}{table.1}\protected@file@percent }
+\gdef \LT@i {\LT@entry 
+    {1}{102.94228pt}\LT@entry 
+    {1}{124.25766pt}\LT@entry 
+    {1}{124.25766pt}\LT@entry 
+    {1}{118.25766pt}}
 \@writefile{toc}{\contentsline {section}{2 Exploratory analysis and data visualization:}{3}{section*.5}\protected@file@percent }
 \newlabel{exploratory-analysis-and-data-visualization}{{}{3}{2 Exploratory analysis and data visualization:}{section*.5}{}}
 \@writefile{toc}{\contentsline {section}{3 Model training for regression}{3}{section*.6}\protected@file@percent }
@@ -40,8 +43,8 @@
 \newlabel{fig:unnamed-chunk-3}{{1}{5}{RMSE for all methods\relax }{figure.caption.9}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Variable Importance Plot\relax }}{6}{figure.caption.10}\protected@file@percent }
 \newlabel{fig:unnamed-chunk-4}{{2}{6}{Variable Importance Plot\relax }{figure.caption.10}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Partial Dependence Plot\relax }}{6}{figure.caption.11}\protected@file@percent }
-\newlabel{fig:unnamed-chunk-5}{{3}{6}{Partial Dependence Plot\relax }{figure.caption.11}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Partial Dependence Plot of Boosting\relax }}{6}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:unnamed-chunk-5}{{3}{6}{Partial Dependence Plot of Boosting\relax }{figure.caption.11}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces LIME Plot\relax }}{7}{figure.caption.12}\protected@file@percent }
 \newlabel{fig:unnamed-chunk-6}{{4}{7}{LIME Plot\relax }{figure.caption.12}{}}
 \@writefile{toc}{\contentsline {subsection}{Interpretions of some significant coefficients on final regression model}{7}{section*.13}\protected@file@percent }
@@ -56,14 +59,14 @@
 \newlabel{fold-cross-validation-on-training-set-1}{{}{8}{10-fold Cross-validation on training set}{section*.17}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces ROC for all classification models\relax }}{9}{figure.caption.18}\protected@file@percent }
 \newlabel{fig:unnamed-chunk-7}{{5}{9}{ROC for all classification models\relax }{figure.caption.18}{}}
-\@writefile{toc}{\contentsline {subsection}{Interpretions of some significant coefficients on final classification model}{9}{section*.20}\protected@file@percent }
-\newlabel{interpretions-of-some-significant-coefficients-on-final-classification-model}{{}{9}{Interpretions of some significant coefficients on final classification model}{section*.20}{}}
-\@writefile{toc}{\contentsline {subsection}{Training and Testing performance}{9}{section*.21}\protected@file@percent }
-\newlabel{training-and-testing-performance-1}{{}{9}{Training and Testing performance}{section*.21}{}}
-\@writefile{toc}{\contentsline {section}{7 Conclusions and discussion}{9}{section*.22}\protected@file@percent }
-\newlabel{conclusions-and-discussion}{{}{9}{7 Conclusions and discussion}{section*.22}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces A caption\relax }}{10}{figure.caption.19}\protected@file@percent }
-\newlabel{fig:unnamed-chunk-8}{{6}{10}{A caption\relax }{figure.caption.19}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Partial Dependence Plot of GAM\relax }}{9}{figure.caption.19}\protected@file@percent }
+\newlabel{fig:unnamed-chunk-8}{{6}{9}{Partial Dependence Plot of GAM\relax }{figure.caption.19}{}}
+\@writefile{toc}{\contentsline {subsection}{Interpretions of some significant coefficients on final classification model}{10}{section*.20}\protected@file@percent }
+\newlabel{interpretions-of-some-significant-coefficients-on-final-classification-model}{{}{10}{Interpretions of some significant coefficients on final classification model}{section*.20}{}}
+\@writefile{toc}{\contentsline {subsection}{Training and Testing performance}{10}{section*.21}\protected@file@percent }
+\newlabel{training-and-testing-performance-1}{{}{10}{Training and Testing performance}{section*.21}{}}
+\@writefile{toc}{\contentsline {section}{7 Conclusions and discussion}{10}{section*.22}\protected@file@percent }
+\newlabel{conclusions-and-discussion}{{}{10}{7 Conclusions and discussion}{section*.22}{}}
 \@writefile{toc}{\contentsline {section}{References}{10}{section*.23}\protected@file@percent }
 \newlabel{references}{{}{10}{References}{section*.23}{}}
 \@writefile{toc}{\contentsline {section}{Appendix}{11}{section*.24}\protected@file@percent }
@@ -76,4 +79,3 @@
 \newlabel{appendix-3}{{}{14}{Appendix 3}{section*.27}{}}
 \@writefile{toc}{\contentsline {subsection}{Appendix 4}{15}{section*.28}\protected@file@percent }
 \newlabel{appendix-4}{{}{15}{Appendix 4}{section*.28}{}}
-\gdef \@abspage@last{15}

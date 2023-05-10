@@ -153,12 +153,12 @@ knitr::include_graphics("image/boosting_vip.png")
 ```
 We also plot variable importance (figure 2) and partial dependence plots (figure 3) for interpretation. Variable importance plot indicates that the bmi, study, height, LDL, and weight are most influential in the model among all the predictors. On the other hand, partial dependence plots shows the the effect of each predictors on the response variable across all observations. It can be seen that they all have distinct features. Lime plot in figure 4 shows the first ten predicted training data. It gives a local interpretation of how each variables contribute to each instance. It seems like bmi has the most influence on each prediction, as it usually weighs the highest absolute value to the instance being explained.
 
-```{r, echo=FALSE, fig.cap="Partial Dependence Plot", out.width = '80%'}
+```{r, echo=FALSE, fig.cap="Partial Dependence Plot of Boosting", out.width = '80%'}
 knitr::include_graphics("image/boosting_pdp.png")
 ```
 \newpage
 
-```{r, echo=FALSE, fig.cap="LIME Plot", out.width = '120%'}
+```{r, echo=FALSE, fig.cap="LIME Plot", out.width = '100%'}
 knitr::include_graphics("image/lime.jpg")
 ```
 
@@ -208,9 +208,9 @@ log( \frac{p(RecoverytimeLong)}{1-p(RecoverytimeLong)}) =& -2.07377 +0.47457\tim
 
 Age, Systolic blood pressure (SBP), LDL cholesterol (LDL), BMI (bmi),height and weight are smoothing term in this model which have a smooth function for those variables. Their plots are in figure4. For race variable, the race1(White) was set as reference. For smoking variable, smoking0(never smoked) was set as reference. For study variable, study1(studyA) was set as the reference. Some variables have significance level over 0.05: gender, smoking1, smoking2, vaccine, hypertension, diabetes, severity, studyB, BMI and height.Those variables have greater impact on the outcome than others.
 
-Heres is the partial dependence plots of BMI and height which are most significant variables for model. (figure 6)
+Here is the partial dependence plots of BMI and height which are most significant variables for model. (figure 6)
 
-```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
+```{r, echo=FALSE, fig.cap="Partial Dependence Plot of GAM", out.width = '100%'}
 knitr::include_graphics("image/GAM_bmi_height.png")
 ```
 
