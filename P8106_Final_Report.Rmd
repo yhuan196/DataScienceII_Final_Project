@@ -164,18 +164,19 @@ In classification, we split the recovery time into long(>30) and short ($\leq 30
 
 
 **1.  (LDA)**:
-Linear Discriminant Analysis, is a statistical method used for classification problems. The algorithm aims to find a linear combination of features that maximally separates different classes. A method = "lda" argument was used within the `train()` function to specify a LDA model fit with metric ="ROC". The `lda()` function from `MASS` package is used for plotting linear discriminates.
+Linear Discriminant Analysis, is a statistical method used for classification problems. The algorithm aims to find a linear combination of features that maximally separates different classes, with the usage of baye's theorem. LDA assumes that the covariance matrix in each class are the same. Additionally, LDA will pre-specify the distribution of likelihood $f_k(x)$. Normal distribution are likely to be selected but other distribution can also be used as the likelihood function. In R implementation, A method = "lda" argument was used within the `train()` function to specify a LDA model fit with metric ="ROC". The `lda()` function from `MASS` package is used for plotting linear discriminates. There is no tuning parameters needed for LDA model. 
 
 **2. Support Vector Machine (SVM)**:
 
-Support Vector Machine can be utilized in a classification problem. By constructing a boundary, it is able to classify into two categories based on predictors. During the training process, a soft margin SVM minimize $\frac{1}{2}||\beta^2+C\sum^n_{i=1}\xi_i$ where the optimal Cost parameter C can be chosen based on 10-fold CV. If inner product is used in predicting f(x), it is a Support vector classifier or linear SVM. It will become SVM with radial kernel if inner product is replaced by $exp(-\gamma\sum^p_{j=1}(x_{ij}-x_{i’j}^2)$. In this case, optimal pair of cost and $\gamma$ can be obtained by 10-fold CV. Both cases are considered in our study. 
+Support Vector Machine can be utilized in a classification problem. By constructing a boundary, it is able to classify into two categories based on predictors. A hard margin SVM assumes two classes are well separated but soft margin does not have such assumption. We will consider soft margin in our case so no strong assumptions is needed. During the training process, a soft margin SVM minimize $\frac{1}{2}||\beta^2+C\sum^n_{i=1}\xi_i$ where the optimal Cost parameter C can be chosen based on 10-fold CV. If inner product is used in predicting f(x), it is a Support vector classifier or linear SVM. It will become SVM with radial kernel if inner product is replaced bya kernel: $exp(-\gamma\sum^p_{j=1}(x_{ij}-x_{i’j}^2)$. In this case, optimal pair of cost and $\gamma$ can be obtained by 10-fold CV. Both cases are considered in our study. 
 
 
 
 
 # 6 Results for classification
 
-After resampling, 8 models share a common set of resampled datasets. The gam model has largest mean value of ROC. The ROC of all 8 model are showed below.
+After resampling, 8 models share a common set of resampled datasets. The gam model has largest mean value of ROC. The ROC of all 8 model are showed below in appendix 4.
+
 ```{r, echo=FALSE, fig.cap="ROC for all classification models", out.width = '80%'}
 knitr::include_graphics("model_result_008_files/figure-gfm/unnamed-chunk-21-2.png")
 ```
@@ -192,7 +193,8 @@ log( \frac{p(RecoverytimeLong)}{1-p(RecoverytimeLong)}) =& -2.07377 +0.47457\tim
 
 Age, Systolic blood pressure (SBP), LDL cholesterol (LDL), BMI (bmi),height and weight are smoothing term in this model which have a smooth function for those variables. Their plots are in figure4. For race variable, the race1(White) was set as reference. For smoking variable, smoking0(never smoked) was set as reference. For study variable, study1(studyA) was set as the reference. Some variables have significance level over 0.05: gender, smoking1, smoking2, vaccine, hypertension, diabetes, severity, studyB, BMI and height.Those variables have greater impact on the outcome than others.
 
-Heres is the partial dependence plots of BMI and height which are most significant variables for model.
+Heres is the partial dependence plots of BMI and height which are most significant variables for model. (figure 5)
+
 ```{r, echo=FALSE, fig.cap="A caption", out.width = '100%'}
 knitr::include_graphics("image/GAM_bmi_height.png")
 ```
@@ -204,6 +206,9 @@ Hold other condition same, people have higher value of bmi, people who are in St
 ## Train/Test performance
 
 We measure performance with error rate. The train error for GAM is calculated by mean of wrong prediction bt train dataset which is 0.266, the test error for GAM is calculated by mean of wrong prediction by test dataset which is 0.283,which indicates that the model has good performance on training and test.
+
+
+\newpage 
 
 # 7 Conclusions and discussion
 
