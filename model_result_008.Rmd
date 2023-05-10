@@ -501,8 +501,8 @@ grid.arrange(grobs = pdps,  ncol = 3)
 
 ```{r}
 #lime
-explain_boosting <- lime(train_class, gbm.fit)
-new_obs <- explain(train_class[1:10,], explain_boosting, n_features=10)
+explain_boosting <- lime(train_data, gbm.fit)
+new_obs <- explain(train_data[1:10,], explain_boosting, n_features=10)
 
 plot_features(new_obs)
 ```
@@ -549,7 +549,6 @@ ctrl_class <- trainControl(method = "cv",
 * **Generalized additive model (GAM)** 
 * **Multivariate adaptive regression splines (MARS)** 
 * **Linear discriminant analysis (LDA)**
-* **Classification and Regression Tree (CART)**
 * **Random Forest**
 * **Boosting**
 * **Support Vector Machine (SVM with Linear and Radial Kernels)**
