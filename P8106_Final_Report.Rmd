@@ -221,7 +221,7 @@ Hold other condition same, people have higher value of bmi, people who are in St
 
 ## Training and Testing performance
 
-We measure performance with error rate. The train error for GAM is calculated by mean of wrong prediction bt train dataset which is 0.266, the test error for GAM is calculated by mean of wrong prediction by test dataset which is 0.283,which indicates that the model has good performance on training and test.
+We measure performance with error rate. The train error for GAM is calculated by mean of wrong prediction by train dataset which is 0.266, the test error for GAM is calculated by mean of wrong prediction by test dataset, which is 0.283. Two error rates indicates that the model has good performance on training and test.
 
 
 # 7 Conclusions and discussion
