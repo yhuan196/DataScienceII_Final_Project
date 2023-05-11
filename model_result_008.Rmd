@@ -864,7 +864,7 @@ bwplot(resamp_class, metric = "ROC")
 plot(model.gam)
 
 #Formula and get the importance of each variable
-summary(model.gam)
+summary(model.gam$finalModel)
 
 #degrees of freedom
 model.gam$finalModel
