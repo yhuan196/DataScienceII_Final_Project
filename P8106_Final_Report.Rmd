@@ -207,9 +207,9 @@ log( \frac{p(RecoverytimeLong)}{1-p(RecoverytimeLong)}) =& -2.07377 +0.47457\tim
 &s(ldl) + s(bmi) + s(height) + s(weight)
 \end{align*}
 
-Age, Systolic blood pressure (SBP), LDL cholesterol (LDL), BMI (bmi),height and weight are smoothing term in this model which have a smooth function for those variables. For race variable, the race1(White) was set as reference. For smoking variable, smoking0(never smoked) was set as reference. For study variable, study1(studyA) was set as the reference. Some variables have significance level over 0.05: gender, smoking, vaccine, severity, study groups, BMI and height.Those variables have greater impact on the outcome than others.
+Age, Systolic blood pressure (SBP), LDL cholesterol (LDL), BMI (bmi), height and weight are smoothing term in this model which have a smooth function for those variables. For race variable, the race1(White) was set as reference. For smoking variable, smoking0(never smoked) was set as reference. For study variable, study1(studyA) was set as the reference. Some variables have significance level over 0.05: gender, smoking, vaccine, severity, study groups, BMI and height. Those variables have greater impact on the outcome than others.
 
-Here is the partial dependence plots of BMI and height which are two most significant continuous variables for model. (figure 6)
+Here is the partial dependence plots of BMI and height which are two most significant continuous variables for model (figure 6).
 
 ```{r, echo=FALSE, fig.cap="Partial Dependence Plot of GAM", out.width = '100%'}
 knitr::include_graphics("image/GAM_bmi_height.png")
